@@ -2,23 +2,16 @@
 
 from typing import Any, Dict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi import Path, Query
 from fastapi.responses import HTMLResponse
-
-# from sqlalchemy.orm import Session
 
 import morecantile
 
 from timvt.ressources.common import mimetype
 from timvt.ressources.responses import TileResponse
-# from timvt.api import deps
 from timvt.core import config
-
-# from .utils import getMVT
 import asyncpg
-import asyncio
-
 import re
 
 router = APIRouter()
@@ -27,14 +20,13 @@ router = APIRouter()
 @router.on_event("startup")
 async def startup():
     global pool
-    pool = await asyncpg.create_pool(
-        config.DATABASE_URL
-    )
+    pool = await asyncpg.create_pool(config.DATABASE_URL)
 
 
 @router.on_event("shutdown")
 async def shutdown():
     await pool.terminate()
+
 
 @router.get("/ping", description="Health Check")
 def ping():
@@ -64,8 +56,8 @@ async def tile(
 
     segSize = (bbox.xmax - bbox.xmin) / 4
 
-    if not re.match("^[a-zA-Z]+[a-zA-Z\_\-0-9]*$", table):
-        raise Exception('Bad tablename')
+    if not re.match(r"^[a-z]+[a-z_\-0-9]*$", table, re.I):
+        raise Exception("Bad tablename")
 
     sql_query = f"""
         WITH
@@ -84,7 +76,7 @@ async def tile(
         ),
         mvtgeom AS (
             SELECT ST_AsMVTGeom(ST_Transform(t.geom, $5), bounds.geom) AS geom, *
-            FROM {table} t, bounds
+            FROM "{table}" t, bounds
             WHERE ST_Intersects(t.geom, ST_Transform(bounds.geom, 4326))
         )
         SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
@@ -93,15 +85,11 @@ async def tile(
     async with pool.acquire() as conn:
         q = await conn.prepare(sql_query)
         content = await q.fetchval(
-            bbox.xmin,
-            bbox.ymin,
-            bbox.xmax,
-            bbox.ymax,
-            epsg,
-            segSize
+            bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax, epsg, segSize
         )
 
     return TileResponse(bytes(content), media_type=mimetype["pbf"])
+
 
 @router.get("/demo", **params)
 @router.get("/demo/{table}", **params)
