@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  titiler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MODULE_NAME=timvt.main
+      - PORT=8000
+      - PYTHONWARNINGS=ignore
+      - VARIABLE_NAME=app
+      - WORKERS_PER_CORE=5
+
+  db:
+    image: postgres:12
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=db
