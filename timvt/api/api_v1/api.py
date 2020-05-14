@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, Depends
 from fastapi import Path, Query
+from fastapi.responses import FileResponse
 
 from sqlalchemy.orm import Session
 
@@ -48,4 +49,8 @@ def tile(
 
     content = getMVT(db, bbox, epsg_number, table)
 
-    return TileResponse(content, media_type=mimetype["pbf"])
+    return TileResponse(bytes(content), media_type=mimetype["pbf"])
+
+@router.get("/demo", **params)
+async def demo():
+    return FileResponse("../demo/index.html")

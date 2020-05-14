@@ -28,4 +28,4 @@ def getMVT(
         )
         SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
     """
-    return db.execute(sql_query).fetchall()
+    return db.execute(sql_query).fetchone()[0]
