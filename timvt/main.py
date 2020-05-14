@@ -7,7 +7,6 @@ from starlette.middleware.gzip import GZipMiddleware
 from timvt.core import config
 from timvt.api.api_v1.api import router
 
-
 app = FastAPI(
     title=config.PROJECT_NAME,
     openapi_url="/api/v1/openapi.json",
