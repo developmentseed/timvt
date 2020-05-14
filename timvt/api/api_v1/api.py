@@ -42,7 +42,7 @@ def tile(
 ) -> TileResponse:
     """Handle /tiles requests."""
     tms = morecantile.tms.get(identifier)
-    
+
     bbox = tms.xy_bounds(morecantile.Tile(x, y, z))
     epsg_number = tms.crs.to_epsg()
 
