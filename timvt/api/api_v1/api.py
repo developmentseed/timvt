@@ -77,7 +77,10 @@ async def tile(
         mvtgeom AS (
             SELECT ST_AsMVTGeom(ST_Transform(t.geom, $5), bounds.geom) AS geom, *
             FROM "{table}" t, bounds
-            WHERE ST_Intersects(t.geom, ST_Transform(bounds.geom, 4326))
+            WHERE ST_Intersects(
+                ST_Transform(t.geom, 4326),
+                ST_Transform(bounds.geom, 4326)
+            )
         )
         SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
     """
