@@ -8,6 +8,7 @@ from asyncpg.pool import Pool
 from ..ressources.enums import MimeTypes
 from ..ressources.responses import TileResponse
 from ..utils.dependencies import TileParams, _get_db_pool
+from ..utils.timings import Timer
 
 from fastapi import APIRouter, Depends, Path
 
@@ -28,11 +29,17 @@ async def tile(
     db_pool: Pool = Depends(_get_db_pool),
 ) -> TileResponse:
     """Handle /tiles requests."""
-    tms = tile_params.tms
-    tile = tile_params.tile
+    timings = []
+    headers: Dict[str, str] = {}
 
-    bbox = tms.xy_bounds(tile)
-    epsg = tms.crs.to_epsg()
+    with Timer() as t:
+        tms = tile_params.tms
+        tile = tile_params.tile
+
+        bbox = tms.xy_bounds(tile)
+        epsg = tms.crs.to_epsg()
+
+    timings.append(("tms-ops", t.elapsed))
 
     segSize = (bbox.xmax - bbox.xmin) / 4
     if not re.match(r"^[a-z]+[a-z_\-0-9]*$", table, re.I):
@@ -63,11 +70,17 @@ async def tile(
         )
         SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
     """
+    with Timer() as t:
+        async with db_pool.acquire() as conn:
+            q = await conn.prepare(sql_query)
+            content = await q.fetchval(
+                bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax, epsg, segSize
+            )
+    timings.append(("db-read", t.elapsed))
 
-    async with db_pool.acquire() as conn:
-        q = await conn.prepare(sql_query)
-        content = await q.fetchval(
-            bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax, epsg, segSize
+    if timings:
+        headers["X-Server-Timings"] = "; ".join(
+            ["{} - {:0.2f}".format(name, time * 1000) for (name, time) in timings]
         )
 
-    return TileResponse(bytes(content), media_type=MimeTypes.pbf.value)
+    return TileResponse(bytes(content), media_type=MimeTypes.pbf.value, headers=headers)

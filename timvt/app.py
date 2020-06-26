@@ -3,7 +3,7 @@
 import logging
 
 from . import settings, version
-from .endpoints import health, tiles, tms
+from .endpoints import demo, health, tiles, tms
 from .events import create_start_app_handler, create_stop_app_handler
 
 from fastapi import FastAPI
@@ -36,3 +36,4 @@ app.add_event_handler("shutdown", create_stop_app_handler(app))
 app.include_router(health.router)
 app.include_router(tiles.router)
 app.include_router(tms.router)
+app.include_router(demo.router)

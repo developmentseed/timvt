@@ -24,7 +24,10 @@ services:
       - database
 
   database:
-    image: postgis/postgis:12-3.0
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: postgres
     ports:
       - "5432:5432"
     environment:

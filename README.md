@@ -22,9 +22,6 @@ $ git clone https://github.com/developmentseed/timvt.git
 
 $ docker-compose build
 $ docker-compose up 
-
-# Add some data in the db
-$ psql -f samples/countries.sql -h localhost -p 5432 -U username -W postgis
 ```
 
 ## Documentation
