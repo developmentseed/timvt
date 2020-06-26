@@ -10,7 +10,7 @@ from starlette.config import Config
 
 config = Config(".env")
 
-APP_NAME = config("APP_NAME", cast=str, default="TiMVT")
+APP_NAME = config("APP_NAME", cast=str, default="TiVTiler")
 ENVIRONMENT = config("ENVIRONMENT", cast=str, default="production")
 DEBUG = config("DEBUG", cast=bool, default=False)
 

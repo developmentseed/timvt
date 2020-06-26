@@ -7,9 +7,14 @@ Create Vector Tiles from PostGres
 [![CircleCI](https://circleci.com/gh/developmentseed/timvt.svg?style=svg)](https://circleci.com/gh/developmentseed/timvt)
 [![codecov](https://codecov.io/gh/developmentseed/timvt/branch/master/graph/badge.svg)](https://codecov.io/gh/developmentseed/timvt)
 
-Timvt, pronounced **tee-tmvtiler** (*ti* is the diminutiveversion of the french *petit* which means small), is lightweight service, which sole goal is to create map tiles dynamically from PG.
+TiVTiler, pronounced **tee-VTiler** (*ti* is the diminutive version of the french *petit* which means small), is lightweight service, which sole goal is to create Vector Tiles dynamically from Postgres.
 
 Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) framework, titiler is written using async/await asynchronous code to improve the performances and handle heavy loads.
+
+## Features
+
+- Multiple TileMatrixSets via [morecantile](https://github.com/developmentseed/morecantile). Default is set to WebMercatorQuad which is the usual Web Mercator projection used in most of Wep Map libraries.)
+...
 
 ### Test locally
 ```bash
@@ -22,6 +27,9 @@ $ docker-compose up
 $ psql -f samples/countries.sql -h localhost -p 5432 -U username -W postgis
 ```
 
+## Documentation
+
+![](https://user-images.githubusercontent.com/10407788/85829036-a9fa1c80-b757-11ea-9f8d-a670434787a9.png)
 
 
 ## Contribution & Development
