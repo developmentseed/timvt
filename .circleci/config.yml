@@ -1,6 +1,6 @@
 version: 2
 common: &common
-  working_directory: ~/titiler
+  working_directory: ~/timvt
   steps:
     - checkout
     - run:
