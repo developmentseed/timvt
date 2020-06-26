@@ -1,1 +1,1 @@
-"""titiler.custom"""
+"""TiVTiler.custom"""

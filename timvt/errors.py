@@ -1,4 +1,4 @@
-"""TiVTiler error classes."""
+"""TiVTiler.errors: Error classes."""
 
 
 class TilerError(Exception):

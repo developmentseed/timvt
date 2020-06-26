@@ -1,4 +1,4 @@
-"""TiVTiler.responses: Response models."""
+"""TiVTiler.ressources.responses: Response models."""
 
 from starlette.background import BackgroundTask
 from starlette.responses import Response

@@ -1,4 +1,4 @@
-"""TiVTiler dependencies."""
+"""TiVTiler.utils.dependencies: endpoint's dependencies."""
 
 from enum import Enum
 

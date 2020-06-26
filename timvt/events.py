@@ -1,4 +1,4 @@
-"""TiVTiler app events."""
+"""TiVTiler.envents: app events."""
 
 from typing import Callable
 

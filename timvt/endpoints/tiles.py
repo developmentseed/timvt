@@ -5,7 +5,7 @@ from typing import Any, Dict
 
 from asyncpg.pool import Pool
 
-from ..ressources.common import mimetype
+from ..ressources.enums import MimeTypes
 from ..ressources.responses import TileResponse
 from ..utils.dependencies import TileParams, _get_db_pool
 
@@ -16,7 +16,7 @@ router = APIRouter()
 params: Dict[str, Any] = {
     "responses": {200: {"content": {"application/x-protobuf": {}}}},
     "response_class": TileResponse,
-    "tags": ["tiles"],
+    "tags": ["Tiles"],
 }
 
 
@@ -70,4 +70,4 @@ async def tile(
             bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax, epsg, segSize
         )
 
-    return TileResponse(bytes(content), media_type=mimetype["pbf"])
+    return TileResponse(bytes(content), media_type=MimeTypes.pbf.value)

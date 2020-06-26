@@ -29,10 +29,12 @@ $ psql -f samples/countries.sql -h localhost -p 5432 -U username -W postgis
 
 ## Documentation
 
-![](https://user-images.githubusercontent.com/10407788/85829036-a9fa1c80-b757-11ea-9f8d-a670434787a9.png)
+`:endpoint:/docs`
+
+![](https://user-images.githubusercontent.com/10407788/85869490-be5f0900-b799-11ea-91aa-1d3ff95a46b4.png)
 
 
-## Contribution & Development
+# Contribution & Development
 
 Issues and pull requests are more than welcome.
 
@@ -40,13 +42,13 @@ Issues and pull requests are more than welcome.
 
 ```bash
 $ git clone https://github.com/developmentseed/timvt.git
-$ cd timvt
+$ cd titiler
 $ pip install -e .[dev]
 ```
 
 **Python3.7 only**
 
-This repo is set to use `pre-commit` to run *my-py*, *flake8*, *pydocstring* and *black* ("uncompromising Python code formatter") when commiting new code.
+This repo is set to use `pre-commit` to run *isort*, *mypy*, *flake8*, *pydocstring* and *black* ("uncompromising Python code formatter") when commiting new code.
 
 ```bash
 $ pre-commit install

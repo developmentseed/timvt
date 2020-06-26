@@ -8,3 +8,14 @@ class VectorType(str, Enum):
 
     pbf = "pbf"
     mvt = "mvt"
+
+
+class MimeTypes(str, Enum):
+    """Responses MineTypes."""
+
+    xml = "application/xml"
+    json = "application/json"
+    html = "text/html"
+    text = "text/plain"
+    pbf = "application/x-protobuf"
+    mvt = "application/x-protobuf"

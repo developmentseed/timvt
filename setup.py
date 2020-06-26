@@ -1,4 +1,4 @@
-"""Setup titiler."""
+"""Setup TiVTiler."""
 
 from setuptools import find_packages, setup
 
@@ -31,6 +31,7 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     keywords="",
     author=u"Vincent Sarago",
@@ -38,7 +39,6 @@ setup(
     url="https://github.com/developmentseed/timvt",
     license="MIT",
     packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
-    package_data={"titiler": ["templates/*.html", "templates/*.xml"]},
     include_package_data=True,
     zip_safe=False,
     install_requires=inst_reqs,
