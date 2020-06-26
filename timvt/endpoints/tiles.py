@@ -7,6 +7,7 @@ from asyncpg.pool import Pool
 
 from ..ressources.enums import MimeTypes
 from ..ressources.responses import TileResponse
+from ..settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 from ..utils.dependencies import TileParams, _get_db_pool
 from ..utils.timings import Timer
 
@@ -29,22 +30,17 @@ async def tile(
     db_pool: Pool = Depends(_get_db_pool),
 ) -> TileResponse:
     """Handle /tiles requests."""
-    timings = []
-    headers: Dict[str, str] = {}
-
-    with Timer() as t:
-        tms = tile_params.tms
-        tile = tile_params.tile
-
-        bbox = tms.xy_bounds(tile)
-        epsg = tms.crs.to_epsg()
-
-    timings.append(("tms-ops", t.elapsed))
-
-    segSize = (bbox.xmax - bbox.xmin) / 4
     if not re.match(r"^[a-z]+[a-z_\-0-9]*$", table, re.I):
         raise Exception("Bad tablename")
 
+    timings = []
+    headers: Dict[str, str] = {}
+
+    bbox = tile_params.tms.xy_bounds(tile_params.tile)
+    epsg = tile_params.tms.crs.to_epsg()
+    segSize = (bbox.xmax - bbox.xmin) / 4
+
+    limit = f"LIMIT {MAX_FEATURES_PER_TILE}" if MAX_FEATURES_PER_TILE > -1 else ""
     sql_query = f"""
         WITH
         bounds AS (
@@ -61,15 +57,15 @@ async def tile(
                 ) AS geom
         ),
         mvtgeom AS (
-            SELECT ST_AsMVTGeom(ST_Transform(t.geom, $5), bounds.geom) AS geom, *
+            SELECT ST_AsMVTGeom(ST_Transform(t.geom, $5), bounds.geom, {TILE_RESOLUTION}, {TILE_BUFFER}) AS geom, *
             FROM "{table}" t, bounds
             WHERE ST_Intersects(
-                ST_Transform(t.geom, 4326),
-                ST_Transform(bounds.geom, 4326)
-            )
+                ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
+            ) {limit}
         )
         SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
     """
+
     with Timer() as t:
         async with db_pool.acquire() as conn:
             q = await conn.prepare(sql_query)

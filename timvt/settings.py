@@ -31,4 +31,8 @@ DB_MAX_INACTIVE_CONN_LIFETIME = config(
 
 DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DBNAME}"
 
+TILE_RESOLUTION = config("DB_MAX_QUERIES", cast=int, default=4096)
+TILE_BUFFER = config("TILE_BUFFER", cast=int, default=256)
+MAX_FEATURES_PER_TILE = config("MAX_FEATURES_PER_TILE", cast=int, default=10000)
+
 CORS_ORIGINS = config("CORS_ORIGINS", cast=str, default="*")
