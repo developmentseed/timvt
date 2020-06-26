@@ -42,26 +42,47 @@
       container: 'map',
       style: { version: 8, sources: {}, layers: [] },
       center: [0, 0],
-      zoom: 3
+      zoom: 4
     })
+
     map.on('load', () => {
-      map.addSource('mvt', {
+      map.addSource('countries', {
         type: 'vector',
         tiles:[
           `${endpoint}/countries/{z}/{x}/{y}.pbf`
         ],
-        minzoom: 0,
-        maxzoom: 30
+        minzoom: 4,
+        maxzoom: 24
       })
       map.addLayer({
-        id: 'mvt',
-        source: 'mvt',
+        id: 'countries',
+        source: 'countries',
         'source-layer': 'default',
         type: 'fill',
         paint: {
-          "fill-color": "#00ffff"
+          'fill-color': 'rgba(200, 100, 240, 0.4)',
+          'fill-outline-color': '#000'
         }
       })
+
+      // Change the cursor to a pointer when the mouse is over the places layer.
+      map.on('mouseenter', 'countries', function () {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+
+      // Change it back to a pointer when it leaves.
+      map.on('mouseleave', 'countries', function () {
+        map.getCanvas().style.cursor = ''
+      })
+
+      map.on('click', 'countries', function (e) {
+        new mapboxgl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(e.features[0].properties.brk_name)
+          .addTo(map);
+      })
+
+
     })
   </script>
 
