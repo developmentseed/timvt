@@ -1,13 +1,14 @@
 """TiVTiler app."""
 import logging
+
+from . import settings, version
+from .endpoints import health, tiles
+from .events import create_start_app_handler, create_stop_app_handler
+
 from fastapi import FastAPI
+
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
-
-from . import version
-from . import settings
-from .endpoints import tiles, health
-from .events import create_start_app_handler, create_stop_app_handler
 
 logger = logging.getLogger(__name__)
 

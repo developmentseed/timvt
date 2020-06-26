@@ -1,13 +1,15 @@
 """TiVTiler.endpoints.health: health check endpoints."""
 
-from fastapi import APIRouter
 from pydantic import BaseModel
 
+from fastapi import APIRouter
 
 router = APIRouter()
 
 
 class Message(BaseModel):
+    """Simple message."""
+
     message: str
 
 

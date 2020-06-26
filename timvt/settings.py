@@ -8,7 +8,6 @@ see: https://www.starlette.io/config/
 
 from starlette.config import Config
 
-
 config = Config(".env")
 
 APP_NAME = config("APP_NAME", cast=str, default="TiMVT")

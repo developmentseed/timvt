@@ -1,7 +1,7 @@
 """TiVTiler.responses: Response models."""
 
-from starlette.responses import Response
 from starlette.background import BackgroundTask
+from starlette.responses import Response
 
 
 class TileResponse(Response):

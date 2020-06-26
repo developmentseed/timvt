@@ -1,11 +1,15 @@
 """TiVTiler dependencies."""
 
-from fastapi import Path, Query
-from starlette.requests import Request
-import morecantile
 from enum import Enum
-from ..custom import tms as custom_tms
+
+import morecantile
 from asyncpg.pool import Pool
+
+from ..custom import tms as custom_tms
+
+from fastapi import Path, Query
+
+from starlette.requests import Request
 
 morecantile.tms.register(custom_tms.EPSG3413)
 

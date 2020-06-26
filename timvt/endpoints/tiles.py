@@ -1,22 +1,22 @@
 """TiVTiler.endpoints.tiles: Vector Tiles endpoint."""
 
+import re
 from typing import Any, Dict
 
-from fastapi import APIRouter, Path, Depends
 from asyncpg.pool import Pool
 
 from ..ressources.common import mimetype
 from ..ressources.responses import TileResponse
 from ..utils.dependencies import TileParams, _get_db_pool
 
-import re
+from fastapi import APIRouter, Depends, Path
 
 router = APIRouter()
 
 params: Dict[str, Any] = {
     "responses": {200: {"content": {"application/x-protobuf": {}}}},
     "response_class": TileResponse,
-    "tags": ["tiles"]
+    "tags": ["tiles"],
 }
 
 
