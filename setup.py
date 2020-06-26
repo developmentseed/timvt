@@ -8,8 +8,7 @@ with open("README.md") as f:
 inst_reqs = [
     "fastapi",
     "jinja2",
-    "sqlalchemy",
-    "psycopg2-binary",
+    "asyncpg",
     "morecantile==1.1.0",
     "email-validator",
 ]

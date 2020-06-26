@@ -48,15 +48,15 @@
       map.addSource('mvt', {
         type: 'vector',
         tiles:[
-          'http://127.0.0.1:8000/v1/tiles/country/{z}/{x}/{y}.pbf'
+          'http://127.0.0.1:8000/v1/tiles/<<<identifier>>>/<<<table>>>/{z}/{x}/{y}.pbf'
         ],
-        minzoom: 3,
-        maxzoom: 8
+        minzoom: 0,
+        maxzoom: 30
       })
       map.addLayer({
         id: 'mvt',
         source: 'mvt',
-        'source-layer': 'admin',
+        'source-layer': 'default',
         type: 'fill',
         paint: {
           "fill-color": "#00ffff"

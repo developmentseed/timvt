@@ -13,11 +13,13 @@ services:
       - PYTHONWARNINGS=ignore
       - VARIABLE_NAME=app
       - WORKERS_PER_CORE=5
+    depends_on:
+      - db
 
   db:
-    image: postgres:12
+    image: postgis/postgis:12-3.0
     ports:
-      - "5432:5432"
+      - "5435:5432"
     environment:
       - POSTGRES_PASSWORD=mypassword
       - POSTGRES_DB=db
