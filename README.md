@@ -1,8 +1,11 @@
-# TiVTiler
-
 **Work In Progress**
 
-Create Vector Tiles from PostGres
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/10407788/85882807-ed7f7580-b7ad-11ea-9f7a-86b989761d79.png"/>
+  <p align="center">A lightweight Postgres based dynamic vector tile server.</p>
+</p>
+
+# TiVTiler
 
 [![CircleCI](https://circleci.com/gh/developmentseed/timvt.svg?style=svg)](https://circleci.com/gh/developmentseed/timvt)
 [![codecov](https://codecov.io/gh/developmentseed/timvt/branch/master/graph/badge.svg)](https://codecov.io/gh/developmentseed/timvt)
