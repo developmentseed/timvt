@@ -1,4 +1,4 @@
-"""timvt."""
+"""TiVTiler."""
 
 import pkg_resources
 

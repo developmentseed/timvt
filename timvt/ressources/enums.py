@@ -1,4 +1,4 @@
-"""Titiler Enums."""
+"""TiVTiler Enums."""
 
 from enum import Enum
 

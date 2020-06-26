@@ -1,6 +1,8 @@
-# timvt
+# TiVTiler
 
-Create MVT from PostGres
+**Work In Progress**
+
+Create Vector Tiles from PostGres
 
 [![CircleCI](https://circleci.com/gh/developmentseed/timvt.svg?style=svg)](https://circleci.com/gh/developmentseed/timvt)
 [![codecov](https://codecov.io/gh/developmentseed/timvt/branch/master/graph/badge.svg)](https://codecov.io/gh/developmentseed/timvt)
@@ -15,7 +17,12 @@ $ git clone https://github.com/developmentseed/timvt.git
 
 $ docker-compose build
 $ docker-compose up 
+
+# Add some data in the db
+$ psql -f samples/countries.sql -h localhost -p 5432 -U username -W postgis
 ```
+
+
 
 ## Contribution & Development
 

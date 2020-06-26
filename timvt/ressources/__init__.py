@@ -1,1 +1,1 @@
-"""timvt.ressources."""
+"""TiVTiler.ressources."""
