@@ -1,4 +1,4 @@
-"""timvt error classes."""
+"""TiVTiler error classes."""
 
 
 class TilerError(Exception):

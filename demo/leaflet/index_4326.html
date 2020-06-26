@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <style>
+		  body { margin:0; padding: 0; width:100%; height:100%;}
+		  .map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/leaflet.vectorgrid@1.2.0"></script>
+    <script src="src/proj4-compressed.js"></script>
+    <script src="src/proj4leaflet.js"></script>
+    <title>WorldCRS84Quad</title>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    
+	<script type="text/javascript">
+      //////////////////////////////////////////////////////////////////////////
+      // WGS84
+      //////////////////////////////////////////////////////////////////////////
+      map = new L.Map('map', {crs: L.CRS.EPSG4326});
+      L.tileLayer('https://tile.gbif.org/4326/omt/{z}/{x}/{y}@1x.png?style=gbif-classic', {
+        maxZoom: 12,
+        minZoom: 0,
+        continuousWorld: true,
+      }).addTo(map)
+    
+
+      var mapboxUrl = "http://0.0.0.0:8081/tiles/WorldCRS84Quad/countries/{z}/{x}/{y}.pbf";
+
+      var mapboxVectorTileOptions = {
+        rendererFactory: L.canvas.tile,
+        vectorTileLayerStyles: {
+          countries: {
+            fill: true,
+            weight: 1,
+            fillColor: '#e5b404',
+            color: '#e5b404',
+            fillOpacity: 0.2,
+            opacity: 0.4
+          },
+        }
+      };
+
+      var mapboxPbfLayer = L.vectorGrid.protobuf(mapboxUrl, mapboxVectorTileOptions).addTo(map)
+
+          
+
+      map.setView([0, 0], 3)
+    </script>
+  
+  </body>
+</html>

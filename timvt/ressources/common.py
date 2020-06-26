@@ -1,4 +1,4 @@
-"""Commons."""
+"""TiVTiler.commons: Commons"""
 
 mimetype = dict(
     pbf="application/x-protobuf",

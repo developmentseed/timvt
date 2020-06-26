@@ -1,25 +1,33 @@
 version: '3'
 
 services:
-  titiler:
+  app:
+    container_name: timvt
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     environment:
-      - MODULE_NAME=timvt.main
-      - PORT=8000
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8081
+      - RELOAD=true
       - PYTHONWARNINGS=ignore
-      - VARIABLE_NAME=app
-      - WORKERS_PER_CORE=5
+      - ENVIRONMENT=local
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+      - DEBUG=TRUE
+    ports:
+      - "8081:8081"
     depends_on:
-      - db
+      - database
 
-  db:
+  database:
     image: postgis/postgis:12-3.0
     ports:
-      - "5435:5432"
+      - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=mypassword
-      - POSTGRES_DB=db
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgis

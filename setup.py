@@ -9,7 +9,7 @@ inst_reqs = [
     "fastapi",
     "jinja2",
     "asyncpg",
-    "morecantile==1.1.0",
+    "morecantile~=1.2.0",
     "email-validator",
 ]
 extra_reqs = {

@@ -3,7 +3,7 @@
 
 <head>
   <meta charset='utf-8' />
-  <title>Rio Viz</title>
+  <title>Ti VTiler</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js'></script>
@@ -35,11 +35,8 @@
   <script>
     var scope = { metadata: {}, config: {} }
 
-    mapboxgl.accessToken = ''
-
     var map = new mapboxgl.Map({
       container: 'map',
-      //style: 'mapbox://styles/mapbox/basic-v9',
       style: { version: 8, sources: {}, layers: [] },
       center: [0, 0],
       zoom: 3
@@ -48,7 +45,7 @@
       map.addSource('mvt', {
         type: 'vector',
         tiles:[
-          'http://127.0.0.1:8000/v1/tiles/<<<identifier>>>/<<<table>>>/{z}/{x}/{y}.pbf'
+          'http://0.0.0.0:8081/tiles/countries/{z}/{x}/{y}.pbf'
         ],
         minzoom: 0,
         maxzoom: 30

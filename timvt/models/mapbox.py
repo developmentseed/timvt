@@ -1,4 +1,4 @@
-"""Common response models."""
+"""TiVTiler.modeles.mapbox: Mapbox models."""
 
 from typing import List, Optional, Tuple
 
