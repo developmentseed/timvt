@@ -1,6 +1,7 @@
 """TiVTiler.index: Index endpoint."""
 
 import json
+import asyncstdlib
 from typing import Dict
 
 from asyncpg.pool import Pool
@@ -14,6 +15,7 @@ from fastapi import APIRouter, Depends
 router = APIRouter()
 
 
+@asyncstdlib.lru_cache()
 async def index(db_pool: Pool) -> Dict:
     """Get list of available layers."""
 
