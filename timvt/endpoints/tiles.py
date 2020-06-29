@@ -1,6 +1,5 @@
 """TiVTiler.endpoints.tiles: Vector Tiles endpoint."""
 
-import re
 from typing import Any, Dict
 
 from asyncpg.pool import Pool
@@ -10,6 +9,7 @@ from ..ressources.responses import TileResponse
 from ..settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 from ..utils.dependencies import TileParams, _get_db_pool
 from ..utils.timings import Timer
+from .index import index
 
 from fastapi import APIRouter, Depends, Path
 
@@ -30,8 +30,11 @@ async def tile(
     db_pool: Pool = Depends(_get_db_pool),
 ) -> TileResponse:
     """Handle /tiles requests."""
-    if not re.match(r"^[a-z]+[a-z_\-0-9]*$", table, re.I):
-        raise Exception("Bad tablename")
+
+    idx = await index(db_pool)
+    if table not in idx:
+        raise Exception("Table not found")
+    geometry_column = idx[table]["geometry_column"]
 
     timings = []
     headers: Dict[str, str] = {}
@@ -40,7 +43,7 @@ async def tile(
     epsg = tile_params.tms.crs.to_epsg()
     segSize = (bbox.xmax - bbox.xmin) / 4
 
-    limit = f"LIMIT {MAX_FEATURES_PER_TILE}" if MAX_FEATURES_PER_TILE > -1 else ""
+    limit = f"LIMIT $9" if MAX_FEATURES_PER_TILE > -1 else ""
     sql_query = f"""
         WITH
         bounds AS (
@@ -57,7 +60,12 @@ async def tile(
                 ) AS geom
         ),
         mvtgeom AS (
-            SELECT ST_AsMVTGeom(ST_Transform(t.geom, $5), bounds.geom, {TILE_RESOLUTION}, {TILE_BUFFER}) AS geom, *
+            SELECT ST_AsMVTGeom(
+                ST_Transform(t.{geometry_column}, $5),
+                bounds.geom,
+                $7,
+                $8
+            ) AS geom, *
             FROM "{table}" t, bounds
             WHERE ST_Intersects(
                 ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
@@ -70,7 +78,15 @@ async def tile(
         async with db_pool.acquire() as conn:
             q = await conn.prepare(sql_query)
             content = await q.fetchval(
-                bbox.xmin, bbox.ymin, bbox.xmax, bbox.ymax, epsg, segSize
+                bbox.xmin,  # 1
+                bbox.ymin,  # 2
+                bbox.xmax,  # 3
+                bbox.ymax,  # 4
+                epsg,  # 5
+                segSize,  # 6
+                TILE_RESOLUTION,  # 7
+                TILE_BUFFER,  # 8
+                MAX_FEATURES_PER_TILE,  # 9
             )
     timings.append(("db-read", t.elapsed))
 

@@ -3,7 +3,7 @@
 import logging
 
 from . import settings, version
-from .endpoints import demo, health, tiles, tms
+from .endpoints import demo, health, tiles, tms, index
 from .events import create_start_app_handler, create_stop_app_handler
 
 from fastapi import FastAPI
@@ -37,3 +37,4 @@ app.include_router(health.router)
 app.include_router(tiles.router)
 app.include_router(tms.router)
 app.include_router(demo.router)
+app.include_router(index.router)
