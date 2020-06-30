@@ -43,7 +43,7 @@ async def tile(
     epsg = tile_params.tms.crs.to_epsg()
     segSize = (bbox.xmax - bbox.xmin) / 4
 
-    limit = f"LIMIT $9" if MAX_FEATURES_PER_TILE > -1 else ""
+    limit = "LIMIT $9" if MAX_FEATURES_PER_TILE > -1 else ""
     sql_query = f"""
         WITH
         bounds AS (

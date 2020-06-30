@@ -18,7 +18,7 @@ router = APIRouter()
 @asyncstdlib.lru_cache()
 async def index(db_pool: Pool) -> Dict:
     """Get list of available layers."""
-    sql_query = f"""
+    sql_query = """
         WITH geo_tables AS (
             SELECT
                 f_table_schema,
