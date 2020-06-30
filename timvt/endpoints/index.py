@@ -1,9 +1,9 @@
 """TiVTiler.index: Index endpoint."""
 
 import json
-import asyncstdlib
 from typing import Dict
 
+import asyncstdlib
 from asyncpg.pool import Pool
 
 from ..ressources.enums import MimeTypes
@@ -18,7 +18,6 @@ router = APIRouter()
 @asyncstdlib.lru_cache()
 async def index(db_pool: Pool) -> Dict:
     """Get list of available layers."""
-
     sql_query = f"""
         WITH geo_tables AS (
             SELECT
@@ -78,11 +77,9 @@ async def index(db_pool: Pool) -> Dict:
 
 
 @router.get("/index")
-async def display_index(
-    db_pool: Pool = Depends(_get_db_pool),
-) -> TileResponse:
+async def display_index(db_pool: Pool = Depends(_get_db_pool),) -> TileResponse:
+    """Display table index."""
     assoc = await index(db_pool)
     return TileResponse(
-        bytes(json.dumps(assoc), encoding="utf8"),
-        media_type=MimeTypes.json.value,
+        bytes(json.dumps(assoc), encoding="utf8"), media_type=MimeTypes.json.value,
     )
