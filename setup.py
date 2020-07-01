@@ -11,7 +11,6 @@ inst_reqs = [
     "asyncpg",
     "morecantile~=1.2.0",
     "email-validator",
-    "asyncstdlib",
 ]
 extra_reqs = {
     "test": ["pytest", "pytest-cov", "pytest-asyncio", "requests"],

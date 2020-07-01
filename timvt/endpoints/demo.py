@@ -14,6 +14,7 @@ router = APIRouter()
 def index(
     request: Request, template=Depends(web_template),
 ):
+    """ Return index to OpenAPI docs, Table Metadata, and Demo Pages """
     context = {"index": request.app.state.Catalog.index}
     return template(request, "index.html", context)
 
@@ -24,7 +25,7 @@ def demo(
     table: str = Path(..., description="Table Name"),
     template=Depends(web_template),
 ):
-    """Demo."""
+    """Demo for each table."""
     table_idx = request.app.state.Catalog.get_table(table)
     if table_idx is None:
         error = {"error": "Table not found"}

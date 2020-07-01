@@ -18,4 +18,5 @@ params: Dict[str, Any] = {
 async def display_index(
     request: Request,
 ) -> JSONResponse:
+    """ Return JSON with available table metadata. """
     return JSONResponse(content=request.app.state.Catalog.index)

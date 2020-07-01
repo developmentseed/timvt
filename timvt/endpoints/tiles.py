@@ -79,7 +79,7 @@ async def tile(
                 $7,
                 $8
             ) AS geom, {colstring}
-            FROM "{table}" t, bounds
+            FROM {table} t, bounds
             WHERE ST_Intersects(
                 ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
             ) {limit}
