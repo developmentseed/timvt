@@ -44,7 +44,6 @@ async def tile(
     epsg = tile_params.tms.crs.to_epsg()
     segSize = (bbox.xmax - bbox.xmin) / 4
 
-    limitval = str(int(MAX_FEATURES_PER_TILE))
     cols = table_idx["columns"]
     if geometry_column in cols:
         del cols[geometry_column]
@@ -54,7 +53,10 @@ async def tile(
             if c not in include_cols:
                 del cols[c]
     colstring = ", ".join(list(cols))
+
+    limitval = str(int(MAX_FEATURES_PER_TILE))
     limit = f"LIMIT {limitval}" if MAX_FEATURES_PER_TILE > -1 else ""
+
     sql_query = f"""
         WITH
         bounds AS (

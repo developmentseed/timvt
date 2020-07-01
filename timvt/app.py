@@ -3,7 +3,7 @@
 import logging
 
 from . import settings, version
-from .endpoints import demo, health, tiles, tms, index
+from .endpoints import demo, health, index, tiles, tms
 from .events import create_start_app_handler, create_stop_app_handler
 
 from fastapi import FastAPI
