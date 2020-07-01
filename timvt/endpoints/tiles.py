@@ -1,7 +1,6 @@
 """TiVTiler.endpoints.tiles: Vector Tiles endpoint."""
 
 from typing import Any, Dict
-
 from asyncpg.pool import Pool
 
 from ..ressources.enums import MimeTypes
@@ -9,9 +8,9 @@ from ..ressources.responses import TileResponse
 from ..settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 from ..utils.dependencies import TileParams, _get_db_pool
 from ..utils.timings import Timer
-from .index import index
+from fastapi import APIRouter, Depends, Request, Path
+from fastapi.responses import JSONResponse
 
-from fastapi import APIRouter, Depends, Path
 
 router = APIRouter()
 
@@ -22,19 +21,21 @@ params: Dict[str, Any] = {
 }
 
 
-@router.get("/tiles/{table}/{z}/{x}/{y}\\.pbf", **params)
-@router.get("/tiles/{identifier}/{table}/{z}/{x}/{y}\\.pbf", **params)
+@router.get("/tiles/{table}/{z}/{x}/{y}.pbf", name="tile_3857", **params)
+@router.get("/tiles/{identifier}/{table}/{z}/{x}/{y}.pbf", **params)
 async def tile(
+    request: Request,
     table: str = Path(..., description="Table Name"),
     tile_params: TileParams = Depends(),
     db_pool: Pool = Depends(_get_db_pool),
+    columns: str = None,
 ) -> TileResponse:
     """Handle /tiles requests."""
-
-    idx = await index(db_pool)
-    if table not in idx:
-        raise Exception("Table not found")
-    geometry_column = idx[table]["geometry_column"]
+    table_idx = request.app.state.Catalog.get_table(table)
+    if table_idx is None:
+        error = {"error": "Table not found"}
+        return JSONResponse(content=error, status_code=404)
+    geometry_column = table_idx["geometry_column"]
 
     timings = []
     headers: Dict[str, str] = {}
@@ -43,7 +44,17 @@ async def tile(
     epsg = tile_params.tms.crs.to_epsg()
     segSize = (bbox.xmax - bbox.xmin) / 4
 
-    limit = f"LIMIT $9" if MAX_FEATURES_PER_TILE > -1 else ""
+    limitval = str(int(MAX_FEATURES_PER_TILE))
+    cols = table_idx["columns"]
+    if geometry_column in cols:
+        del cols[geometry_column]
+    if columns is not None:
+        include_cols = [c.strip() for c in columns.split(",")]
+        for c in cols.copy():
+            if c not in include_cols:
+                del cols[c]
+    colstring = ", ".join(list(cols))
+    limit = f"LIMIT {limitval}" if MAX_FEATURES_PER_TILE > -1 else ""
     sql_query = f"""
         WITH
         bounds AS (
@@ -65,7 +76,7 @@ async def tile(
                 bounds.geom,
                 $7,
                 $8
-            ) AS geom, *
+            ) AS geom, {colstring}
             FROM "{table}" t, bounds
             WHERE ST_Intersects(
                 ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
@@ -86,7 +97,6 @@ async def tile(
                 segSize,  # 6
                 TILE_RESOLUTION,  # 7
                 TILE_BUFFER,  # 8
-                MAX_FEATURES_PER_TILE,  # 9
             )
     timings.append(("db-read", t.elapsed))
 

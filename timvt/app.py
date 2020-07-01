@@ -30,6 +30,7 @@ if settings.CORS_ORIGINS:
     )
 
 app.add_middleware(GZipMiddleware, minimum_size=0)
+
 app.add_event_handler("startup", create_start_app_handler(app))
 app.add_event_handler("shutdown", create_stop_app_handler(app))
 
