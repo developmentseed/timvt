@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8' />
+  <title>Ti VTiler</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css' rel='stylesheet' />
+
+  <link href='https://api.mapbox.com/mapbox-assembly/v0.23.2/assembly.min.css' rel='stylesheet'>
+  <script src='https://api.mapbox.com/mapbox-assembly/v0.23.2/assembly.js'></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id='map'></div>
+  <script>
+
+    const endpoint = window.location.protocol + '//' + window.location.host + '{{ tile_path }}' + window.location.search;
+    const table = '{{ table }}'
+
+    var scope = { metadata: {}, config: {} }
+
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: { version: 8, sources: {}, layers: [] },
+      center: [0, 0],
+      zoom: 4
+    })
+
+    map.on('load', () => {
+      map.addSource('table', {
+        type: 'vector',
+        tiles:[
+          endpoint
+        ],
+        minzoom: 4,
+        maxzoom: 24
+      })
+      map.addLayer({
+        id: 'table',
+        source: 'table',
+        'source-layer': 'default',
+        type: 'fill',
+        paint: {
+          'fill-color': 'rgba(200, 100, 240, 0.4)',
+          'fill-outline-color': '#000'
+        }
+      })
+
+      // Change the cursor to a pointer when the mouse is over the places layer.
+      map.on('mouseenter', 'table', function () {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+
+      // Change it back to a pointer when it leaves.
+      map.on('mouseleave', 'table', function () {
+        map.getCanvas().style.cursor = ''
+      })
+
+      map.on('click', 'table', function (e) {
+        props = e.features[0].properties;
+        t = '<table>';
+        for (var key in props){
+          t += "<tr><td>" + key + "</td><td>" + props[key] + "</td></tr>";
+        }
+        t += '</table>';
+        new mapboxgl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(t)
+          .addTo(map);
+      })
+
+
+    })
+  </script>
+
+</body>
+
+</html>

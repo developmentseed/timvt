@@ -3,6 +3,7 @@
 from typing import Callable
 
 from .db.events import close_db_connection, connect_to_db
+from .utils.catalog import Catalog
 
 from fastapi import FastAPI
 
@@ -11,7 +12,10 @@ def create_start_app_handler(app: FastAPI) -> Callable:  # type: ignore
     """App start event."""
 
     async def start_app() -> None:
+        global Tables
         await connect_to_db(app)
+        app.state.Catalog = Catalog(app)
+        await app.state.Catalog.init()
 
     return start_app
 

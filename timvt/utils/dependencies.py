@@ -1,7 +1,6 @@
 """TiVTiler.utils.dependencies: endpoint's dependencies."""
 
 from enum import Enum
-
 import morecantile
 from asyncpg.pool import Pool
 
@@ -13,7 +12,9 @@ from starlette.requests import Request
 
 morecantile.tms.register(custom_tms.EPSG3413)
 
-TileMatrixSetNames = Enum("TileMatrixSetNames", [(a, a) for a in sorted(morecantile.tms.list())])  # type: ignore
+TileMatrixSetNames = Enum(
+    "TileMatrixSetNames", [(a, a) for a in sorted(morecantile.tms.list())]
+)  # type: ignore
 
 
 class TileParams:
