@@ -10,8 +10,9 @@ from ..settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 from ..utils.dependencies import TileParams, _get_db_pool
 from ..utils.timings import Timer
 
-from fastapi import APIRouter, Depends, Path, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
+
+from starlette import status
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ params: Dict[str, Any] = {
 }
 
 
-@router.get("/tiles/{table}/{z}/{x}/{y}.pbf", name="tile_3857", **params)
+@router.get("/tiles/{table}/{z}/{x}/{y}.pbf", **params)
 @router.get("/tiles/{identifier}/{table}/{z}/{x}/{y}.pbf", **params)
 async def tile(
     request: Request,
@@ -34,8 +35,10 @@ async def tile(
     """Handle /tiles requests."""
     table_idx = request.app.state.Catalog.get_table(table)
     if table_idx is None:
-        error = {"error": "Table not found"}
-        return JSONResponse(content=error, status_code=404)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Table '{table}' not found.",
+        )
+
     geometry_column = table_idx["geometry_column"]
 
     timings = []
@@ -48,11 +51,13 @@ async def tile(
     cols = table_idx["columns"]
     if geometry_column in cols:
         del cols[geometry_column]
+
     if columns is not None:
         include_cols = [c.strip() for c in columns.split(",")]
         for c in cols.copy():
             if c not in include_cols:
                 del cols[c]
+
     colstring = ", ".join(list(cols))
 
     limitval = str(int(MAX_FEATURES_PER_TILE))
