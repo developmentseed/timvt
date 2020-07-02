@@ -1,21 +1,26 @@
 """TiVTiler.utils.dependencies: endpoint's dependencies."""
 
-from enum import Enum
 import json
+from enum import Enum
 
 from fastapi import FastAPI
 
 
 class Catalog:
+    """Table Catalog Class."""
+
     def __init__(self, app: FastAPI):
+        """Init class."""
         self.app = app
 
     async def init(self):
+        """Feed Catalog."""
         self.index = await self.get_index()
         self.Tables = self.get_tables_enum()
 
     @property
     def sql(self):
+        """SQL requests."""
         return """
             WITH geo_tables AS (
                 SELECT
@@ -59,6 +64,7 @@ class Catalog:
         """
 
     async def get_index(self):
+        """Run SQL requests."""
         async with self.app.state.pool.acquire() as conn:
             q = await conn.prepare(self.sql)
             content = await q.fetchval()
@@ -66,6 +72,7 @@ class Catalog:
         return self.index
 
     def get_table(self, table: str):
+        """Get Table list."""
         schema = None
         split = table.split(".")
         if len(split) == 2:
@@ -78,6 +85,7 @@ class Catalog:
         return None
 
     def get_tables_enum(self):
+        """Return TableList enum."""
         table_list = [r["table"] for r in self.index]
         Tables = Enum("Tables", [(a, a) for a in table_list])
         return Tables

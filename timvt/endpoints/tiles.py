@@ -1,6 +1,7 @@
 """TiVTiler.endpoints.tiles: Vector Tiles endpoint."""
 
 from typing import Any, Dict
+
 from asyncpg.pool import Pool
 
 from ..ressources.enums import MimeTypes
@@ -8,9 +9,9 @@ from ..ressources.responses import TileResponse
 from ..settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 from ..utils.dependencies import TileParams, _get_db_pool
 from ..utils.timings import Timer
-from fastapi import APIRouter, Depends, Request, Path
-from fastapi.responses import JSONResponse
 
+from fastapi import APIRouter, Depends, Path, Request
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
