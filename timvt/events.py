@@ -12,7 +12,6 @@ def create_start_app_handler(app: FastAPI) -> Callable:  # type: ignore
     """App start event."""
 
     async def start_app() -> None:
-        global Tables
         await connect_to_db(app)
         app.state.Catalog = Catalog(app)
         await app.state.Catalog.init()

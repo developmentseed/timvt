@@ -15,8 +15,6 @@ params: Dict[str, Any] = {
 
 
 @router.get("/index", **params)
-async def display_index(
-    request: Request,
-) -> JSONResponse:
+async def display_index(request: Request,) -> JSONResponse:
     """ Return JSON with available table metadata. """
     return JSONResponse(content=request.app.state.Catalog.index)
