@@ -1,20 +1,27 @@
 """TiVTiler.index: Index endpoint."""
 
-from typing import Any, Dict
+from typing import List
+
+from ..models.metadata import TableMetadata
 
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
-params: Dict[str, Any] = {
-    "responses": {200: {"content": {"application/json": {}}}},
-    "response_class": JSONResponse,
-    "tags": ["Index"],
-}
 
-
-@router.get("/index", **params)
-async def display_index(request: Request) -> JSONResponse:
-    """ Return JSON with available table metadata. """
-    return JSONResponse(content=request.app.state.Catalog.index)
+@router.get(
+    "/index",
+    response_model=List[TableMetadata],
+    tags=["Database"],
+    description="Return available tables.",
+    deprecated=True,
+)
+@router.get(
+    "/index.json",
+    response_model=List[TableMetadata],
+    tags=["Database"],
+    description="Return available tables.",
+)
+async def display_index(request: Request):
+    """Return JSON with available table metadata. """
+    return request.app.state.Catalog.index
