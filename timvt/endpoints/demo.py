@@ -2,15 +2,16 @@
 
 from ..templates.factory import web_template
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, HTTPException, Path
 
+from starlette import status
 from starlette.requests import Request
-from starlette.responses import HTMLResponse, JSONResponse
+from starlette.responses import HTMLResponse
 
 router = APIRouter()
 
 
-@router.get("/", response_class=HTMLResponse, tags=["demo"])
+@router.get("/", response_class=HTMLResponse, tags=["Demo"])
 def index(
     request: Request, template=Depends(web_template),
 ):
@@ -19,21 +20,19 @@ def index(
     return template(request, "index.html", context)
 
 
-@router.get("/demo/{table}/", response_class=HTMLResponse, tags=["demo"])
+@router.get("/demo/{table}/", response_class=HTMLResponse, tags=["Demo"])
 def demo(
     request: Request,
     table: str = Path(..., description="Table Name"),
     template=Depends(web_template),
 ):
     """Demo for each table."""
-    table_idx = request.app.state.Catalog.get_table(table)
-    if table_idx is None:
-        error = {"error": "Table not found"}
-        return JSONResponse(content=error, status_code=404)
+    if request.app.state.Catalog.get_table(table) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Table '{table}' not found.",
+        )
 
-    for route in request.scope["router"].routes:
-        if route.name == "tile_3857":
-            tile_path = route.path.format(table=table, x="{x}", y="{y}", z="{z}")
-
-    context = {"table": table, "tile_path": tile_path}
+    kwargs = {"table": table, "z": "{z}", "x": "{x}", "y": "{y}"}
+    tile_url = request.url_for("tile", **kwargs).replace("\\", "")
+    context = {"endpoint": tile_url}
     return template(request, "demo.html", context)
