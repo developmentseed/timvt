@@ -16,9 +16,7 @@ html_templates = Jinja2Templates(directory=os.path.dirname(__file__))
 def web_template() -> Callable[[Request, str], _TemplateResponse]:
     """Create a dependency which may be injected into a FastAPI app."""
 
-    def _template(
-        request: Request, page: str, context: Dict = {},
-    ) -> _TemplateResponse:
+    def _template(request: Request, page: str, context: Dict = {}) -> _TemplateResponse:
         """Create a template from a request"""
         context["request"] = request
         return html_templates.TemplateResponse(
