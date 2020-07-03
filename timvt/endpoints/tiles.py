@@ -124,12 +124,14 @@ async def tile(
     response_model=TileJSON,
     responses={200: {"description": "Return a tilejson"}},
     response_model_exclude_none=True,
+    tags=["Tiles"],
 )
 @router.get(
     "/{TileMatrixSetId}/{table}.json",
     response_model=TileJSON,
     responses={200: {"description": "Return a tilejson"}},
     response_model_exclude_none=True,
+    tags=["Tiles"],
 )
 async def tilejson(
     request: Request,
