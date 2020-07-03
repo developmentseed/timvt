@@ -1,4 +1,9 @@
-"""TiVTiler.envents: app events."""
+"""
+TiVTiler.events: Application Start/Shutdown events handler.
+
+Docs: https://fastapi.tiangolo.com/advanced/events/
+
+"""
 
 from typing import Callable
 
