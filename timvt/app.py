@@ -3,10 +3,10 @@
 import logging
 
 from . import settings, version
+from .db.catalog import table_index
 from .db.events import close_db_connection, connect_to_db
 from .endpoints import demo, health, index, tiles, tms
 from .ressources.responses import JSONIndented
-from .utils.catalog import Catalog
 
 from fastapi import FastAPI
 
@@ -45,8 +45,8 @@ app.add_middleware(GZipMiddleware, minimum_size=0)
 async def startup_event():
     """Application startup: register the database connection and create table list."""
     await connect_to_db(app)
-    app.state.Catalog = Catalog(app)
-    await app.state.Catalog.init()
+    # Fetch database table list
+    app.state.Catalog = await table_index(app.state.pool)
 
 
 @app.on_event("shutdown")
