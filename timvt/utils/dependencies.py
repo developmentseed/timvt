@@ -18,22 +18,23 @@ TileMatrixSetNames = Enum(  # type: ignore
 )
 
 
-class TileParams:
-    """Common Tile parameters."""
+async def TileParams(
+    z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
+    x: int = Path(..., description="Tiles's column"),
+    y: int = Path(..., description="Tiles's row"),
+) -> morecantile.Tile:
+    """Tile parameters."""
+    return morecantile.Tile(x, y, z)
 
-    def __init__(
-        self,
-        z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
-        x: int = Path(..., description="Tiles's column"),
-        y: int = Path(..., description="Tiles's row"),
-        TileMatrixSetId: TileMatrixSetNames = Query(
-            TileMatrixSetNames.WebMercatorQuad,  # type: ignore
-            description="TileMatrixSet Name (default: 'WebMercatorQuad')",
-        ),
-    ):
-        """Populate Imager Params."""
-        self.tms = morecantile.tms.get(TileMatrixSetId.value)
-        self.tile = morecantile.Tile(x, y, z)
+
+async def TileMatrixSetParams(
+    TileMatrixSetId: TileMatrixSetNames = Query(
+        TileMatrixSetNames.WebMercatorQuad,  # type: ignore
+        description="TileMatrixSet Name (default: 'WebMercatorQuad')",
+    ),
+) -> morecantile.TileMatrixSet:
+    """TileMatrixSet parameters."""
+    return morecantile.tms.get(TileMatrixSetId.value)
 
 
 def _get_db_pool(request: Request) -> Pool:

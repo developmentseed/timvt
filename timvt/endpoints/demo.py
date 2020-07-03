@@ -32,7 +32,7 @@ def demo(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Table '{table}' not found.",
         )
 
-    kwargs = {"table": table, "z": "{z}", "x": "{x}", "y": "{y}"}
-    tile_url = request.url_for("tile", **kwargs).replace("\\", "")
+    kwargs = {"table": table}
+    tile_url = request.url_for("tilejson", **kwargs).replace("\\", "")
     context = {"endpoint": tile_url}
     return template(request, "demo.html", context)

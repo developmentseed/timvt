@@ -5,6 +5,7 @@ import logging
 from . import settings, version
 from .db.events import close_db_connection, connect_to_db
 from .endpoints import demo, health, index, tiles, tms
+from .ressources.responses import JSONIndented
 from .utils.catalog import Catalog
 
 from fastapi import FastAPI
@@ -14,11 +15,13 @@ from starlette.middleware.gzip import GZipMiddleware
 
 logger = logging.getLogger(__name__)
 
+
 # Create TiVTiler Application.
 app = FastAPI(
     title=settings.APP_NAME,
     description="A lightweight PostGIS vector tile server.",
     version=version,
+    default_response_class=JSONIndented,
 )
 app.debug = settings.DEBUG
 

@@ -47,11 +47,7 @@
     map.on('load', () => {
       map.addSource('table', {
         type: 'vector',
-        tiles:[
-          endpoint
-        ],
-        minzoom: 4,
-        maxzoom: 24
+        url: endpoint,
       })
       map.addLayer({
         id: 'table',
