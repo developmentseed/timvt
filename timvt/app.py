@@ -3,8 +3,9 @@
 import logging
 
 from . import settings, version
+from .db.events import close_db_connection, connect_to_db
 from .endpoints import demo, health, index, tiles, tms
-from .events import create_start_app_handler, create_stop_app_handler
+from .utils.catalog import Catalog
 
 from fastapi import FastAPI
 
@@ -35,9 +36,21 @@ if settings.CORS_ORIGINS:
 # Add GZIP compression by default.
 app.add_middleware(GZipMiddleware, minimum_size=0)
 
+
 # Register Start/Stop application event handler to setup/stop the database connection
-app.add_event_handler("startup", create_start_app_handler(app))
-app.add_event_handler("shutdown", create_stop_app_handler(app))
+@app.on_event("startup")
+async def startup_event():
+    """Application startup: register the database connection and create table list."""
+    await connect_to_db(app)
+    app.state.Catalog = Catalog(app)
+    await app.state.Catalog.init()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Application shutdown: de-register the database connection."""
+    await close_db_connection(app)
+
 
 # Register endpoints.
 app.include_router(health.router)
