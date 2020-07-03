@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/10407788/85882807-ed7f7580-b7ad-11ea-9f7a-86b989761d79.png"/>
-  <p align="center">A lightweight Postgres based dynamic vector tile server.</p>
+  <p align="center">A lightweight PostGIS based dynamic vector tile server.</p>
 </p>
 
 # TiVTiler
