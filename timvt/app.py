@@ -5,6 +5,7 @@ import logging
 from . import settings, version
 from .endpoints import demo, health, index, tiles, tms
 from .events import create_start_app_handler, create_stop_app_handler
+from .ressources.responses import JSONIndented
 
 from fastapi import FastAPI
 
@@ -13,10 +14,12 @@ from starlette.middleware.gzip import GZipMiddleware
 
 logger = logging.getLogger(__name__)
 
+
 app = FastAPI(
     title=settings.APP_NAME,
     description="A lightweight Vector Tile server",
     version=version,
+    default_response_class=JSONIndented,
 )
 app.debug = settings.DEBUG
 if settings.CORS_ORIGINS:
