@@ -57,6 +57,9 @@ POSTGRES_PASS=password
 POSTGRES_DBNAME=postgis
 POSTGRES_HOST=0.0.0.0
 POSTGRES_PORT=5432
+
+# Or you can also define the DATABASE_URL directly
+DATABASE_URL=postgresql://username:password@0.0.0.0:5432/postgis
 ```
 
 4. Launch
