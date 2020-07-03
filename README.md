@@ -80,6 +80,40 @@ $ docker-compose up --build
 ![](https://user-images.githubusercontent.com/10407788/85869490-be5f0900-b799-11ea-91aa-1d3ff95a46b4.png)
 
 
+
+# Project structure
+
+```
+demo/                            - Leaflet/Mapbox demo
+ │
+Dockerfiles/                     - Dockerfiles.
+ ├── app/
+ │   └── Dockerfile              - TiVTiler Application dockerfile (python:3.8-slim).
+ ├── db/
+ │   ├── countries.sql           - Natural Earth test dataset.
+ │   └── Dockerfile              - PostGIS dockerfile (postgis/postgis:12-3.0).
+ │
+tests/                           - TiVTiler Python Unitest suite.
+ │
+timvt/                           - python module.
+ ├── endpoints/                  - Application routes.
+ │   ├── demo.py                 - Demo web pages.
+ │   ├── health.py               - health check endpoint.
+ │   ├── index.py                - Table metadata and list.
+ │   ├── tiles.py                - Tile related endpoints.
+ │   └── tms.py                  - TileMatrixSet list and metadata.
+ ├── custom/                     - Custom TMS grids.
+ ├── db/                         - db related tools.
+ ├── models/                     - pydantic models for this application.
+ ├── ressources/                 - application ressources (enums, constants, ...).
+ ├── templates/                  - factory and html templates.
+ ├── utils/                      - application tools (dependencies, timer, ...).
+ ├── main.py                     - FastAPI application creation and configuration.
+ └── utils.py                    - utility functions.
+ 
+```
+
+
 # Contribution & Development
 
 Issues and pull requests are more than welcome.
