@@ -1,12 +1,13 @@
 """TiVTiler.utils.dependencies: endpoint's dependencies."""
 
+import re
 from enum import Enum
-from typing import Dict
 
 import morecantile
 from asyncpg.pool import Pool
 
 from ..custom import tms as custom_tms
+from ..models.metadata import TableMetadata
 
 from fastapi import HTTPException, Path, Query
 
@@ -40,18 +41,19 @@ async def TileMatrixSetParams(
 
 async def TableParams(
     request: Request, table: str = Path(..., description="Table Name"),
-) -> Dict:
+) -> TableMetadata:
     """Table."""
-    schema = None
-    split = table.split(".")
-    if len(split) == 2:
-        schema = split[0]
-        table = split[1]
+    table_pattern = re.match(  # type: ignore
+        r"^((?P<schema>.+)\.)?(?P<table>.+)$", table
+    ).groupdict()
+
+    schema = table_pattern["schema"]
+    table_name = table_pattern["table"]
 
     for r in request.app.state.Catalog:
-        if r["table"] == table:
+        if r["table"] == table_name:
             if schema is None or r["schema"] == schema:
-                return r
+                return TableMetadata(**r)
 
     raise HTTPException(status_code=404, detail=f"Table '{table}' not found.")
 

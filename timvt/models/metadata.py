@@ -1,6 +1,6 @@
 """TiVTiler Metadata models."""
 
-from typing import Dict
+from typing import Dict, Optional
 
 from pydantic import BaseModel, Field
 
@@ -8,7 +8,11 @@ from pydantic import BaseModel, Field
 class TableMetadata(BaseModel):
     """Table Metadata."""
 
-    table: str
+    id: str
     dbschema: str = Field(..., alias="schema")
-    columns: Dict[str, str]
+    table: str
     geometry_column: str
+    srid: int
+    geometry_type: str
+    properties: Dict[str, str]
+    link: Optional[str]

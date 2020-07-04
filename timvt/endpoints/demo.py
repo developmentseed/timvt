@@ -1,7 +1,6 @@
 """TiVTiler.endpoints.demo: Demos."""
 
-from typing import Dict
-
+from ..models.metadata import TableMetadata
 from ..templates.factory import web_template
 from ..utils.dependencies import TableParams
 
@@ -25,11 +24,10 @@ def index(
 @router.get("/demo/{table}/", response_class=HTMLResponse, tags=["Demo"])
 def demo(
     request: Request,
-    table: Dict = Depends(TableParams),
+    table: TableMetadata = Depends(TableParams),
     template=Depends(web_template),
 ):
     """Demo for each table."""
-    kwargs = {"table": table["table"]}
-    tile_url = request.url_for("tilejson", **kwargs).replace("\\", "")
+    tile_url = request.url_for("tilejson", table=table.id).replace("\\", "")
     context = {"endpoint": tile_url}
     return template(request, "demo.html", context)
