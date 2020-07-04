@@ -57,7 +57,7 @@ async def shutdown_event():
 
 # Register endpoints.
 app.include_router(health.router)
+app.include_router(index.router)
 app.include_router(tiles.router)
 app.include_router(tms.router)
 app.include_router(demo.router)
-app.include_router(index.router)
