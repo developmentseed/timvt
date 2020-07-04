@@ -24,4 +24,4 @@ router = APIRouter()
 )
 async def display_index(request: Request):
     """Return JSON with available table metadata. """
-    return request.app.state.Catalog.index
+    return request.app.state.Catalog
