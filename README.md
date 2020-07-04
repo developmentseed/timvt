@@ -98,22 +98,22 @@ Dockerfiles/                     - Dockerfiles.
  │
 tests/                           - TiVTiler Python Unitest suite.
  │
-timvt/                           - python module.
+timvt/                           - Python module.
  ├── endpoints/                  - Application routes.
  │   ├── demo.py                 - Demo web pages.
- │   ├── health.py               - health check endpoint.
+ │   ├── health.py               - Health check endpoint.
  │   ├── index.py                - Table metadata and list.
  │   ├── tiles.py                - Tile related endpoints.
  │   └── tms.py                  - TileMatrixSet list and metadata.
  ├── custom/                     - Custom TMS grids.
- ├── db/                         - db related tools.
- ├── models/                     - pydantic models for this application.
- ├── ressources/                 - application ressources (enums, constants, ...).
- ├── templates/                  - factory and html templates.
- ├── utils/                      - application tools (dependencies, timer, ...).
- ├── main.py                     - FastAPI application creation and configuration.
- └── utils.py                    - utility functions.
- 
+ ├── db/                         - Db related tools.
+ ├── models/                     - Pydantic models for this application.
+ ├── ressources/                 - Application ressources (enums, constants, ...).
+ ├── templates/                  - Factory and html templates.
+ ├── utils/                      - Application tools (dependencies, timer, ...).
+ ├── app.py                      - FastAPI application creation and configuration.
+ ├── setting.py                  - Application configuration.
+ └── errors.py                   - Application custom errors.
 ```
 
 
