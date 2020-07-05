@@ -24,4 +24,7 @@ router = APIRouter()
 )
 async def display_index(request: Request):
     """Return JSON with available table metadata. """
-    return request.app.state.Catalog.index
+    return [
+        TableMetadata(**table, link=request.url_for("tilejson", table=table["id"]))
+        for table in request.app.state.Catalog
+    ]

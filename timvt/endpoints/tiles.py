@@ -6,15 +6,19 @@ from asyncpg.pool import Pool
 from morecantile import Tile, TileMatrixSet
 
 from ..models.mapbox import TileJSON
+from ..models.metadata import TableMetadata
 from ..ressources.enums import MimeTypes
 from ..ressources.responses import TileResponse
 from ..settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
-from ..utils.dependencies import TileMatrixSetParams, TileParams, _get_db_pool
+from ..utils.dependencies import (
+    TableParams,
+    TileMatrixSetParams,
+    TileParams,
+    _get_db_pool,
+)
 from ..utils.timings import Timer
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
-
-from starlette import status
+from fastapi import APIRouter, Depends, Query, Request
 
 router = APIRouter()
 
@@ -29,21 +33,13 @@ params: Dict[str, Any] = {
 @router.get("/tiles/{TileMatrixSetId}/{table}/{z}/{x}/{y}.pbf", **params)
 async def tile(
     request: Request,
-    table: str = Path(..., description="Table Name"),
+    table: TableMetadata = Depends(TableParams),
     tile: Tile = Depends(TileParams),
     tms: TileMatrixSet = Depends(TileMatrixSetParams),
     db_pool: Pool = Depends(_get_db_pool),
     columns: str = None,
 ) -> TileResponse:
     """Handle /tiles requests."""
-    table_idx = request.app.state.Catalog.get_table(table)
-    if table_idx is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Table '{table}' not found.",
-        )
-
-    geometry_column = table_idx["geometry_column"]
-
     timings = []
     headers: Dict[str, str] = {}
 
@@ -51,7 +47,8 @@ async def tile(
     epsg = tms.crs.to_epsg()
     segSize = (bbox.xmax - bbox.xmin) / 4
 
-    cols = table_idx["columns"]
+    geometry_column = table.geometry_column
+    cols = table.properties
     if geometry_column in cols:
         del cols[geometry_column]
 
@@ -88,7 +85,7 @@ async def tile(
                 $7,
                 $8
             ) AS geom, {colstring}
-            FROM {table} t, bounds
+            FROM {table.id} t, bounds
             WHERE ST_Intersects(
                 ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
             ) {limit}
@@ -135,21 +132,15 @@ async def tile(
 )
 async def tilejson(
     request: Request,
-    table: str = Path(..., description="Table Name"),
+    table: TableMetadata = Depends(TableParams),
     tms: TileMatrixSet = Depends(TileMatrixSetParams),
     minzoom: Optional[int] = Query(None, description="Overwrite default minzoom."),
     maxzoom: Optional[int] = Query(None, description="Overwrite default maxzoom."),
 ):
     """Return TileJSON document."""
-    table_idx = request.app.state.Catalog.get_table(table)
-    if table_idx is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Table '{table}' not found.",
-        )
-
     kwargs = {
         "TileMatrixSetId": tms.identifier,
-        "table": table,
+        "table": table.id,
         "z": "{z}",
         "x": "{x}",
         "y": "{y}",
@@ -160,6 +151,6 @@ async def tilejson(
     return {
         "minzoom": minzoom,
         "maxzoom": maxzoom,
-        "name": table,
+        "name": table.id,
         "tiles": [tile_endpoint],
     }
