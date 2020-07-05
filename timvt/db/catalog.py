@@ -1,7 +1,7 @@
 """TiVTiler.db.catalog: Table catalog."""
 
 import json
-from typing import Mapping
+from typing import Sequence
 
 from asyncpg.pool import Pool
 
@@ -10,7 +10,9 @@ sql_query = """
         SELECT
             f_table_schema,
             f_table_name,
-            f_geometry_column
+            f_geometry_column,
+            type,
+            srid
         FROM
             geometry_columns
     ), t AS (
@@ -18,6 +20,8 @@ sql_query = """
         f_table_schema,
         f_table_name,
         f_geometry_column,
+        type,
+        srid,
         jsonb_object(
             array_agg(column_name),
             array_agg(udt_name)
@@ -32,15 +36,20 @@ sql_query = """
     GROUP BY
         f_table_schema,
         f_table_name,
-        f_geometry_column
+        f_geometry_column,
+        type,
+        srid
     )
     SELECT
         jsonb_agg(
             jsonb_build_object(
+                'id', concat(f_table_schema, '.', f_table_name),
                 'schema', f_table_schema,
                 'table', f_table_name,
                 'geometry_column', f_geometry_column,
-                'columns', coldict
+                'srid', srid,
+                'geometry_type', type,
+                'properties', coldict
             )
         )
     FROM t
@@ -48,7 +57,7 @@ sql_query = """
 """
 
 
-async def table_index(db_pool: Pool) -> Mapping:
+async def table_index(db_pool: Pool) -> Sequence:
     """Fetch Table index."""
     async with db_pool.acquire() as conn:
         q = await conn.prepare(sql_query)

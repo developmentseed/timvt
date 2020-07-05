@@ -6,6 +6,7 @@ from asyncpg.pool import Pool
 from morecantile import Tile, TileMatrixSet
 
 from ..models.mapbox import TileJSON
+from ..models.metadata import TableMetadata
 from ..ressources.enums import MimeTypes
 from ..ressources.responses import TileResponse
 from ..settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
@@ -32,7 +33,7 @@ params: Dict[str, Any] = {
 @router.get("/tiles/{TileMatrixSetId}/{table}/{z}/{x}/{y}.pbf", **params)
 async def tile(
     request: Request,
-    table: Dict = Depends(TableParams),
+    table: TableMetadata = Depends(TableParams),
     tile: Tile = Depends(TileParams),
     tms: TileMatrixSet = Depends(TileMatrixSetParams),
     db_pool: Pool = Depends(_get_db_pool),
@@ -46,9 +47,8 @@ async def tile(
     epsg = tms.crs.to_epsg()
     segSize = (bbox.xmax - bbox.xmin) / 4
 
-    table_name = table["table"]
-    geometry_column = table["geometry_column"]
-    cols = table["columns"]
+    geometry_column = table.geometry_column
+    cols = table.properties
     if geometry_column in cols:
         del cols[geometry_column]
 
@@ -85,7 +85,7 @@ async def tile(
                 $7,
                 $8
             ) AS geom, {colstring}
-            FROM {table_name} t, bounds
+            FROM {table.id} t, bounds
             WHERE ST_Intersects(
                 ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
             ) {limit}
@@ -132,17 +132,15 @@ async def tile(
 )
 async def tilejson(
     request: Request,
-    table: Dict = Depends(TableParams),
+    table: TableMetadata = Depends(TableParams),
     tms: TileMatrixSet = Depends(TileMatrixSetParams),
     minzoom: Optional[int] = Query(None, description="Overwrite default minzoom."),
     maxzoom: Optional[int] = Query(None, description="Overwrite default maxzoom."),
 ):
     """Return TileJSON document."""
-    table_name = table["table"]
-
     kwargs = {
         "TileMatrixSetId": tms.identifier,
-        "table": table_name,
+        "table": table.id,
         "z": "{z}",
         "x": "{x}",
         "y": "{y}",
@@ -153,6 +151,6 @@ async def tilejson(
     return {
         "minzoom": minzoom,
         "maxzoom": maxzoom,
-        "name": table_name,
+        "name": table.id,
         "tiles": [tile_endpoint],
     }
