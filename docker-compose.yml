@@ -24,7 +24,8 @@ services:
       - database:database
     depends_on:
       - database
-    command: ["/app/wait-and-start.sh"]
+    healthcheck:
+      test: ["CMD","curl","localhost:8081/healthz"]
 
 
   database:
