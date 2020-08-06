@@ -22,9 +22,9 @@ class TileJSON(BaseModel):
     legend: Optional[str]
     scheme: str = "xyz"
     tiles: List[str]
-    grids: Optional[List[str]]
-    data: Optional[List[str]]
+    grids: List[str] = []
+    data: List[str] = []
     minzoom: int = Field(0, ge=0, le=30)
     maxzoom: int = Field(30, ge=0, le=30)
     bounds: List[float] = [-180, -90, 180, 90]
-    center: Tuple[float, float, int]
+    center: Optional[Tuple[float, float, int]]

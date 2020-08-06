@@ -14,13 +14,20 @@ APP_NAME = config("APP_NAME", cast=str, default="TiVTiler")
 ENVIRONMENT = config("ENVIRONMENT", cast=str, default="production")
 DEBUG = config("DEBUG", cast=bool, default=False)
 
-
 # Database config
-POSTGRES_USER = config("POSTGRES_USER", cast=str)
-POSTGRES_PASS = config("POSTGRES_PASS", cast=str)
-POSTGRES_DBNAME = config("POSTGRES_DBNAME", cast=str)
-POSTGRES_PORT = config("POSTGRES_PORT", cast=str)
-POSTGRES_HOST = config("POSTGRES_HOST", cast=str)
+DATABASE_URL = config("DATABASE_URL", cast=str, default="")
+if not DATABASE_URL:
+    POSTGRES_USER = config("POSTGRES_USER", cast=str)
+    POSTGRES_PASS = config("POSTGRES_PASS", cast=str)
+    POSTGRES_DBNAME = config("POSTGRES_DBNAME", cast=str)
+    POSTGRES_PORT = config("POSTGRES_PORT", cast=str)
+    POSTGRES_HOST = config("POSTGRES_HOST", cast=str)
+
+    DATABASE_URL = (
+        f"postgresql://{POSTGRES_USER}:"
+        f"{POSTGRES_PASS}@{POSTGRES_HOST}:"
+        f"{POSTGRES_PORT}/{POSTGRES_DBNAME}"
+    )
 
 DB_MIN_CONN_SIZE = config("DB_MIN_CONN_SIZE", cast=int, default=10)
 DB_MAX_CONN_SIZE = config("DB_MAX_CONN_SIZE", cast=int, default=10)
@@ -29,9 +36,7 @@ DB_MAX_INACTIVE_CONN_LIFETIME = config(
     "DB_MAX_INACTIVE_CONN_LIFETIME", cast=float, default=300.0
 )
 
-DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DBNAME}"
-
-TILE_RESOLUTION = config("DB_MAX_QUERIES", cast=int, default=4096)
+TILE_RESOLUTION = config("TILE_RESOLUTION", cast=int, default=4096)
 TILE_BUFFER = config("TILE_BUFFER", cast=int, default=256)
 MAX_FEATURES_PER_TILE = config("MAX_FEATURES_PER_TILE", cast=int, default=10000)
 

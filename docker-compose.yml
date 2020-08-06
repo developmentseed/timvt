@@ -5,7 +5,7 @@ services:
     container_name: timvt
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfiles/app/Dockerfile
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8081
@@ -27,7 +27,7 @@ services:
 
   database:
     build:
-      context: db/
+      context: ./Dockerfiles/db
       dockerfile: Dockerfile
     container_name: postgres
     ports:
