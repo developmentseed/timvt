@@ -15,17 +15,19 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_HOST=database
       - POSTGRES_PORT=5432
       - DEBUG=TRUE
     ports:
       - "8081:8081"
+    links:
+      - database:database
     depends_on:
       - database
 
   database:
     build:
-      context: ./db
+      context: db/
       dockerfile: Dockerfile
     container_name: postgres
     ports:
@@ -34,3 +36,13 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=postgis
+      - POSTGRES_HOST=database
+      - PGUSER=username
+      - PGPASSWORD=password
+      - PGDATABASE=postgis
+      - PGHOST=database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U username"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
