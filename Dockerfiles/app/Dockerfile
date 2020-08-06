@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
 COPY README.md /app/README.md
 COPY timvt/ /app/timvt/
 COPY setup.py /app/setup.py
+COPY Dockerfiles/app/wait-and-start.sh /app/
 
 RUN pip install -e /app/.["server"] --no-cache-dir
 

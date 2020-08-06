@@ -24,6 +24,8 @@ services:
       - database:database
     depends_on:
       - database
+    command: ["/app/wait-and-start.sh"]
+
 
   database:
     build:
@@ -36,13 +38,4 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=postgis
-      - POSTGRES_HOST=database
       - PGUSER=username
-      - PGPASSWORD=password
-      - PGDATABASE=postgis
-      - PGHOST=database
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U username"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
