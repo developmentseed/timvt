@@ -1,5 +1,4 @@
 """TiVTiler.db.tiles: tile reading"""
-import abc
 from dataclasses import dataclass, field
 
 import morecantile
@@ -13,7 +12,7 @@ WEB_MERCATOR_TMS = morecantile.tms.get("WebMercatorQuad")
 
 
 @dataclass
-class VectorTileReader(abc.ABC):
+class VectorTileReader:
     """VectorTileReader"""
 
     db_pool: Pool

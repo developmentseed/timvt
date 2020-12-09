@@ -1,5 +1,4 @@
 """TiVTiler.endpoints.factory: router factories."""
-import abc
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Optional, Type
 
@@ -26,7 +25,7 @@ TILE_RESPONSE_PARAMS: Dict[str, Any] = {
 
 # ref: https://github.com/python/mypy/issues/5374
 @dataclass  # type: ignore
-class VectorTilerFactory(metaclass=abc.ABCMeta):
+class VectorTilerFactory:
     """VectorTiler Factory."""
 
     reader: Type[VectorTileReader] = field(default=VectorTileReader)
@@ -111,14 +110,12 @@ class VectorTilerFactory(metaclass=abc.ABCMeta):
             response_model=TileJSON,
             responses={200: {"description": "Return a tilejson"}},
             response_model_exclude_none=True,
-            tags=["Tiles"],
         )
         @self.router.get(
             "/{TileMatrixSetId}/{table}.json",
             response_model=TileJSON,
             responses={200: {"description": "Return a tilejson"}},
             response_model_exclude_none=True,
-            tags=["Tiles"],
         )
         async def tilejson(
             request: Request,
