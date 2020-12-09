@@ -20,7 +20,7 @@ TileMatrixSetNames = Enum(  # type: ignore
 )
 
 
-async def TileParams(
+def TileParams(
     z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
     x: int = Path(..., description="Tiles's column"),
     y: int = Path(..., description="Tiles's row"),
@@ -29,7 +29,7 @@ async def TileParams(
     return morecantile.Tile(x, y, z)
 
 
-async def TileMatrixSetParams(
+def TileMatrixSetParams(
     TileMatrixSetId: TileMatrixSetNames = Query(
         TileMatrixSetNames.WebMercatorQuad,  # type: ignore
         description="TileMatrixSet Name (default: 'WebMercatorQuad')",
@@ -39,7 +39,7 @@ async def TileMatrixSetParams(
     return morecantile.tms.get(TileMatrixSetId.value)
 
 
-async def TableParams(
+def TableParams(
     request: Request, table: str = Path(..., description="Table Name"),
 ) -> TableMetadata:
     """Table."""
