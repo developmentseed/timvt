@@ -5,7 +5,7 @@ import logging
 from . import settings, version
 from .db.catalog import table_index
 from .db.events import close_db_connection, connect_to_db
-from .endpoints import health, index, tiles, tms
+from .endpoints import health, tiles, tms
 from .ressources.responses import JSONIndented
 
 from fastapi import FastAPI
@@ -56,6 +56,5 @@ async def shutdown_event():
 
 # Register endpoints.
 app.include_router(health.router)
-app.include_router(index.router)
 app.include_router(tiles.router, tags=["Tiles"])
 app.include_router(tms.router)
