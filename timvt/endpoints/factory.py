@@ -42,9 +42,8 @@ class VectorTilerFactory:
     # Database pool dependency
     db_pool_dependency: Callable[..., Pool] = _get_db_pool
 
-    # Router Prefix is needed to find the path for /tile if the TilerFactory.router is mounted
-    # with other router (multiple `.../tile` routes).
-    # e.g if you mount the route with `/cog` prefix, set router_prefix to cog and
+    # Router Prefix is needed to find the path for routes when prefixed
+    # e.g if you mount the route with `/foo` prefix, set router_prefix to foo
     router_prefix: str = ""
 
     def __post_init__(self):
