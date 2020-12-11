@@ -1,4 +1,6 @@
 """``pytest`` configuration."""
+
+import os
 import tempfile
 
 import psycopg2
@@ -6,6 +8,9 @@ import pytest
 from pytest_postgresql import factories
 
 from starlette.testclient import TestClient
+
+DATA_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+
 
 # Create a temporary postgresql instance for the test session, running on :5432
 postgresql_port = 5432
@@ -26,18 +31,14 @@ def database_url(postgresql_my_proc):
     conn = psycopg2.connect(dsn=db_url)
     cursor = conn.cursor()
     cursor.execute("CREATE EXTENSION postgis")
-    cursor.execute(
-        open(
-            "/Users/jeffalbrecht/Documents/Personal/timvt/Dockerfiles/db/landsat_wrs.sql"
-        ).read()
-    )
+    cursor.execute(open(os.path.join(DATA_DIR, "landsat_wrs.sql")).read())
     yield db_url
     conn.close()
 
 
 @pytest.fixture(autouse=True)
-def app(database_url, monkeypatch) -> TestClient:
-    """Make sure we use monkeypatch env."""
+def app(database_url, monkeypatch):
+    """Create app with connection to the pytest database."""
     monkeypatch.setenv("DATABASE_URL", database_url)
 
     from timvt.app import app

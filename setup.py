@@ -21,7 +21,7 @@ extra_reqs = {
         "requests",
         "psycopg2-binary",
         "pytest-postgresql",
-        "mapbox_vector_tile",
+        "mapbox-vector-tile",
     ],
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "requests", "pre-commit"],
     "server": ["uvicorn"],
