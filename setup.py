@@ -13,7 +13,15 @@ inst_reqs = [
     "email-validator",
 ]
 extra_reqs = {
-    "test": ["pytest", "pytest-cov", "pytest-asyncio", "requests"],
+    "test": [
+        "pytest",
+        "pytest-cov",
+        "pytest-asyncio",
+        "requests",
+        "psycopg2-binary",
+        "pytest-postgresql",
+        "mapbox_vector_tile",
+    ],
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "requests", "pre-commit"],
     "server": ["uvicorn"],
 }
