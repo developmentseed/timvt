@@ -1,4 +1,5 @@
 """TiVTiler.endpoints.factory: router factories."""
+
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Type
 
@@ -6,11 +7,11 @@ from asyncpg.pool import Pool
 from morecantile import TileMatrixSet
 
 from timvt.db.tiles import VectorTileReader
+from timvt.dependencies import TableParams, TileMatrixSetParams, _get_db_pool
 from timvt.models.mapbox import TileJSON
 from timvt.models.metadata import TableMetadata
 from timvt.ressources.enums import MimeTypes
-from timvt.utils.dependencies import TableParams, TileMatrixSetParams, _get_db_pool
-from timvt.utils.timings import Timer
+from timvt.utils import Timer
 
 from fastapi import APIRouter, Depends, Path, Query
 

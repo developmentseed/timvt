@@ -9,8 +9,9 @@ inst_reqs = [
     "fastapi",
     "jinja2",
     "asyncpg",
-    "morecantile~=1.2.0",
+    "morecantile~=2.0.1",
     "email-validator",
+    "dataclasses;python_version<'3.7'",
 ]
 extra_reqs = {
     "test": [
@@ -24,6 +25,7 @@ extra_reqs = {
     ],
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "requests", "pre-commit"],
     "server": ["uvicorn"],
+    "docs": ["nbconvert", "mkdocs", "mkdocs-material", "mkdocs-jupyter", "pygments"],
 }
 
 
@@ -42,12 +44,12 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    keywords="",
+    keywords="FastAPI MVT POSTGIS",
     author=u"Vincent Sarago",
     author_email="vincent@developmentseed.org",
     url="https://github.com/developmentseed/timvt",
     license="MIT",
-    packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
+    packages=find_packages(exclude=["tests*"]),
     package_data={"timvt": ["templates/*.html"]},
     include_package_data=True,
     zip_safe=False,

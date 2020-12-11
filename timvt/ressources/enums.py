@@ -15,6 +15,7 @@ class MimeTypes(str, Enum):
 
     xml = "application/xml"
     json = "application/json"
+    geojson = "application/geo+json"
     html = "text/html"
     text = "text/plain"
     pbf = "application/x-protobuf"

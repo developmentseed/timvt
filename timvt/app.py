@@ -2,11 +2,12 @@
 
 import logging
 
-from . import settings, version
-from .db.catalog import table_index
-from .db.events import close_db_connection, connect_to_db
-from .endpoints import health, tiles, tms
-from .ressources.responses import JSONIndented
+from timvt import __version__ as timvt_version
+from timvt import settings
+from timvt.db.catalog import table_index
+from timvt.db.events import close_db_connection, connect_to_db
+from timvt.endpoints import health, tiles, tms
+from timvt.ressources.responses import JSONIndented
 
 from fastapi import FastAPI
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title=settings.APP_NAME,
     description="A lightweight PostGIS vector tile server.",
-    version=version,
+    version=timvt_version,
     default_response_class=JSONIndented,
 )
 app.debug = settings.DEBUG

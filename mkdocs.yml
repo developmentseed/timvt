@@ -1,0 +1,57 @@
+site_name: timvt
+site_description: A lightweight PostGIS based dynamic vector tile server.
+
+repo_name: "developmentseed/timvt"
+repo_url: "https://github.com/developmentseed/timvt"
+
+extra:
+  social:
+    - icon: "fontawesome/brands/github"
+      link: "https://github.com/developmentseed"
+    - icon: "fontawesome/brands/twitter"
+      link: "https://twitter.com/developmentseed"
+    - icon: "fontawesome/brands/medium"
+      link: "https://medium.com/devseed"
+
+nav:
+  - TiMVT: "index.md"
+  - Development - Contributing: "contributing.md"
+  - Release Notes: "release-notes.md"
+
+plugins:
+  - search
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    scheme: default
+  custom_dir: 'docs/overrides'
+
+# https://github.com/kylebarron/cogeo-mosaic/blob/mkdocs/mkdocs.yml#L50-L75
+markdown_extensions:
+  - admonition
+  - attr_list
+  - codehilite:
+      guess_lang: false
+  - def_list
+  - footnotes
+  - pymdownx.arithmatex
+  - pymdownx.betterem
+  - pymdownx.caret:
+      insert: false
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.escapeall:
+      hardbreak: true
+      nbsp: true
+  - pymdownx.magiclink:
+      hide_protocol: true
+      repo_url_shortener: true
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - toc:
+      permalink: true
