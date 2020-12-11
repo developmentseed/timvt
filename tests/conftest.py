@@ -36,7 +36,7 @@ def database_url(postgresql_my_proc):
     conn.close()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def app(database_url, monkeypatch):
     """Create app with connection to the pytest database."""
     monkeypatch.setenv("DATABASE_URL", database_url)
