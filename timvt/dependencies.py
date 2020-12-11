@@ -1,22 +1,23 @@
-"""TiVTiler.utils.dependencies: endpoint's dependencies."""
+"""TiVTiler.dependencies: endpoint's dependencies."""
 
 import re
 from enum import Enum
 
-import morecantile
 from asyncpg.pool import Pool
+from morecantile import Tile, TileMatrixSet, tms
 
-from ..custom import tms as custom_tms
-from ..models.metadata import TableMetadata
+from timvt.custom import tms as custom_tms
+from timvt.models.metadata import TableMetadata
 
 from fastapi import HTTPException, Path, Query
 
 from starlette.requests import Request
 
-morecantile.tms.register(custom_tms.EPSG3413)
+# Register Custom TMS
+tms = tms.register([custom_tms.EPSG3413, custom_tms.EPSG6933])
 
 TileMatrixSetNames = Enum(  # type: ignore
-    "TileMatrixSetNames", [(a, a) for a in sorted(morecantile.tms.list())]
+    "TileMatrixSetNames", [(a, a) for a in sorted(tms.list())]
 )
 
 
@@ -24,9 +25,9 @@ def TileParams(
     z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
     x: int = Path(..., description="Tiles's column"),
     y: int = Path(..., description="Tiles's row"),
-) -> morecantile.Tile:
+) -> Tile:
     """Tile parameters."""
-    return morecantile.Tile(x, y, z)
+    return Tile(x, y, z)
 
 
 def TileMatrixSetParams(
@@ -34,9 +35,9 @@ def TileMatrixSetParams(
         TileMatrixSetNames.WebMercatorQuad,  # type: ignore
         description="TileMatrixSet Name (default: 'WebMercatorQuad')",
     ),
-) -> morecantile.TileMatrixSet:
+) -> TileMatrixSet:
     """TileMatrixSet parameters."""
-    return morecantile.tms.get(TileMatrixSetId.value)
+    return tms.get(TileMatrixSetId.name)
 
 
 def TableParams(

@@ -1,4 +1,4 @@
-"""TiVTiler.utils.timings: Timer tools."""
+"""TiVTiler.utils: Utility functions."""
 
 import time
 

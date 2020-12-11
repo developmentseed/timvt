@@ -2,10 +2,10 @@
 
 from morecantile.models import TileMatrixSet
 
-from ..models.OGC import TileMatrixSetList
-from ..utils.dependencies import TileMatrixSetNames, morecantile
+from timvt.dependencies import TileMatrixSetNames, TileMatrixSetParams
+from timvt.models.OGC import TileMatrixSetList
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends
 
 from starlette.requests import Request
 
@@ -18,30 +18,28 @@ router = APIRouter()
     response_model_exclude_none=True,
     tags=["TileMatrixSets"],
 )
-async def tms_list(request: Request):
+async def TileMatrixSet_list(request: Request):
     """
     Return list of supported TileMatrixSets.
 
     Specs: http://docs.opengeospatial.org/per/19-069.html#_tilematrixsets
     """
-    scheme = request.url.scheme
-    host = request.headers["host"]
-
-    tms_list = morecantile.tms.list()
     return {
         "tileMatrixSets": [
             {
-                "id": tms,
-                "title": morecantile.tms.get(tms).title,
+                "id": tms.name,
+                "title": tms.name,
                 "links": [
                     {
-                        "href": f"{scheme}://{host}/tileMatrixSets/{tms}",
+                        "href": request.url_for(
+                            "TileMatrixSet_info", TileMatrixSetId=tms.name
+                        ),
                         "rel": "item",
                         "type": "application/json",
                     }
                 ],
             }
-            for tms in tms_list
+            for tms in TileMatrixSetNames
         ]
     }
 
@@ -52,9 +50,6 @@ async def tms_list(request: Request):
     response_model_exclude_none=True,
     tags=["TileMatrixSets"],
 )
-async def tms_info(
-    TileMatrixSetId: TileMatrixSetNames = Query(..., description="TileMatrixSet Name")
-):
+async def TileMatrixSet_info(tms=Depends(TileMatrixSetParams)):
     """Return TileMatrixSet JSON document."""
-    tms = morecantile.tms.get(TileMatrixSetId.value)
     return tms
