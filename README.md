@@ -5,12 +5,31 @@
   <p align="center">A lightweight PostGIS based dynamic vector tile server.</p>
 </p>
 
-# TiVTiler
+<p align="center">
+  <a href="https://github.com/developmentseed/timvt/actions?query=workflow%3ACI" target="_blank">
+      <img src="https://github.com/developmentseed/timvt/workflows/CI/badge.svg" alt="Test">
+  </a>
+  <a href="https://codecov.io/gh/developmentseed/timvt" target="_blank">
+      <img src="https://codecov.io/gh/developmentseed/timvt/branch/master/graph/badge.svg" alt="Coverage">
+  </a>
+  <a href="https://pypi.org/project/timvt" target="_blank">
+      <img src="https://img.shields.io/pypi/v/timvt?color=%2334D058&label=pypi%20package" alt="Package version">
+  </a>
+  <a href="https://github.com/developmentseed/timvt/blob/master/LICENSE" target="_blank">
+      <img src="https://img.shields.io/github/timvt/developmentseed/timvt.svg" alt="Downloads">
+  </a>
+</p>
 
-[![CircleCI](https://circleci.com/gh/developmentseed/timvt.svg?style=svg)](https://circleci.com/gh/developmentseed/timvt)
-[![codecov](https://codecov.io/gh/developmentseed/timvt/branch/master/graph/badge.svg)](https://codecov.io/gh/developmentseed/timvt)
 
-TiVTiler, pronounced **tee-VTiler**, is lightweight service, which sole goal is to create [Vector Tiles](https://github.com/mapbox/vector-tile-spec) dynamically from [PostGIS](https://github.com/postgis/postgis).
+---
+
+**Documentation**: <a href="https://developmentseed.org/timvt/" target="_blank">https://developmentseed.org/timvt/</a>
+
+**Source Code**: <a href="https://github.com/developmentseed/timvt" target="_blank">https://github.com/developmentseed/timvt</a>
+
+---
+
+`TiMVT`, pronounced **tee-MVT**, is lightweight service, which sole goal is to create [Vector Tiles](https://github.com/mapbox/vector-tile-spec) dynamically from [PostGIS](https://github.com/postgis/postgis).
 
 Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) framework, titiler is written in Python using async/await asynchronous code to improve the performances and handle heavy loads.
 
@@ -26,12 +45,11 @@ TiVTiler is mostly inspired from the awesome [urbica/martin](https://github.com/
 #### Python Requirements
 - [FastAPI](https://fastapi.tiangolo.com): *Modern, fast (high-performance), web framework for building APIs*
 - [Morecantile](https://github.com/developmentseed/morecantile) (Rasterio/GDAL): *Construct and use map tile grids (a.k.a TileMatrixSet / TMS)*
-- [asyncpg](https://github.com/MagicStack/asyncpg) *A fast PostgreSQL Database Client Library for Python/asyncio* 
-
+- [asyncpg](https://github.com/MagicStack/asyncpg) *A fast PostgreSQL Database Client Library for Python/asyncio*
 
 #### PostGIS/Postgres
 
-TiVTiler rely mostly on [`ST_AsMVT`](https://postgis.net/docs/ST_AsMVT.html) function and will need PostGIS >= 2.5. 
+TiVTiler rely mostly on [`ST_AsMVT`](https://postgis.net/docs/ST_AsMVT.html) function and will need PostGIS >= 2.5.
 
 If you want more info about `ST_AsMVT` function or on the subject of creating Vector Tile from PostGIS, please read this great article from Paul Ramsey: https://info.crunchydata.com/blog/dynamic-vector-tiles-from-postgis
 
@@ -117,26 +135,19 @@ timvt/                           - Python module.
 ```
 
 
-# Contribution & Development
+## Contribution & Development
 
-Issues and pull requests are more than welcome.
+See [CONTRIBUTING.md](https://github.com/developmentseed/timvt/blob/master/CONTRIBUTING.md)
 
-**dev install**
+## License
 
-```bash
-$ git clone https://github.com/developmentseed/timvt.git
-$ cd titiler
-$ pip install -e .[dev]
-```
-
-**Python3.7 only**
-
-This repo is set to use `pre-commit` to run *isort*, *mypy*, *flake8*, *pydocstring* and *black* ("uncompromising Python code formatter") when commiting new code.
-
-```bash
-$ pre-commit install
-```
+See [LICENSE](https://github.com/developmentseed/timvt/blob/master/LICENSE)
 
 ## Authors
+
 Created by [Development Seed](<http://developmentseed.org>)
+
+## Changes
+
+See [CHANGES.md](https://github.com/developmentseed/timvt/blob/master/CHANGES.md).
 
