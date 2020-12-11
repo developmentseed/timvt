@@ -21,10 +21,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Set up Postgresql
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: '13'
+      - name: Set up PostGIS
+        uses: huaxk/postgis-action@v1
 
       - name: Install dependencies
         run: |
