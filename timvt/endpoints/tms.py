@@ -1,7 +1,5 @@
 """TiVTiler.endpoint.tms: TileMatrixSet routes."""
 
-import json
-
 from morecantile.models import TileMatrixSet
 
 from timvt.dependencies import TileMatrixSetNames, TileMatrixSetParams
@@ -54,4 +52,4 @@ async def TileMatrixSet_list(request: Request):
 )
 async def TileMatrixSet_info(tms=Depends(TileMatrixSetParams)):
     """Return TileMatrixSet JSON document."""
-    return json.loads(tms.json(exclude_none=True))
+    return tms
