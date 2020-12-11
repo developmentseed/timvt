@@ -1,9 +1,10 @@
 """TiVTiler.db.tiles: tile reading"""
+
 from dataclasses import dataclass, field
 
 import morecantile
 from asyncpg.pool import Pool
-from morecantile import CoordsBbox, TileMatrixSet
+from morecantile import BoundingBox, TileMatrixSet
 
 from timvt.models.metadata import TableMetadata
 from timvt.settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
@@ -19,10 +20,10 @@ class VectorTileReader:
     table: TableMetadata
     tms: TileMatrixSet = field(default_factory=lambda: WEB_MERCATOR_TMS)
 
-    async def _tile_from_bbox(self, bbox: CoordsBbox, columns: str) -> bytes:
+    async def _tile_from_bbox(self, bbox: BoundingBox, columns: str) -> bytes:
         """return a vector tile (bytes) for the input bounds"""
         epsg = self.tms.crs.to_epsg()
-        segSize = bbox.xmax - bbox.xmin
+        segSize = bbox.left - bbox.right
 
         geometry_column = self.table.geometry_column
         cols = self.table.properties
@@ -73,10 +74,10 @@ class VectorTileReader:
         async with self.db_pool.acquire() as conn:
             q = await conn.prepare(sql_query)
             content = await q.fetchval(
-                bbox.xmin,  # 1
-                bbox.ymin,  # 2
-                bbox.xmax,  # 3
-                bbox.ymax,  # 4
+                bbox.left,  # 1
+                bbox.bottom,  # 2
+                bbox.right,  # 3
+                bbox.top,  # 4
                 epsg,  # 5
                 segSize,  # 6
                 TILE_RESOLUTION,  # 7

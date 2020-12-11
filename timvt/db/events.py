@@ -4,7 +4,7 @@ import logging
 
 import asyncpg
 
-from ..settings import (
+from timvt.settings import (
     DATABASE_URL,
     DB_MAX_CONN_SIZE,
     DB_MAX_INACTIVE_CONN_LIFETIME,
