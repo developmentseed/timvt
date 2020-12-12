@@ -14,7 +14,15 @@ inst_reqs = [
     "dataclasses;python_version<'3.7'",
 ]
 extra_reqs = {
-    "test": ["pytest", "pytest-cov", "pytest-asyncio", "requests"],
+    "test": [
+        "pytest",
+        "pytest-cov",
+        "pytest-asyncio",
+        "requests",
+        "psycopg2-binary",
+        "pytest-pgsql",
+        "mapbox-vector-tile",
+    ],
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "requests", "pre-commit"],
     "server": ["uvicorn"],
     "docs": ["nbconvert", "mkdocs", "mkdocs-material", "mkdocs-jupyter", "pygments"],

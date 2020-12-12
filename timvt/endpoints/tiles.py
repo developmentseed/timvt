@@ -12,6 +12,7 @@ from starlette.responses import HTMLResponse
 tiler = VectorTilerFactory()
 
 
+# We add demo viewers to the VectorTiler endpoints
 @tiler.router.get("/", response_class=HTMLResponse, tags=["Demo"])
 def index(request: Request, template=Depends(web_template)):
     """Index of tables."""

@@ -23,7 +23,7 @@ class VectorTileReader:
     async def _tile_from_bbox(self, bbox: BoundingBox, columns: str) -> bytes:
         """return a vector tile (bytes) for the input bounds"""
         epsg = self.tms.crs.to_epsg()
-        segSize = bbox.left - bbox.right
+        segSize = bbox.right - bbox.left
 
         geometry_column = self.table.geometry_column
         cols = self.table.properties
