@@ -136,6 +136,7 @@ class VectorTilerFactory:
             **TILE_RESPONSE_PARAMS
         )
         async def function(
+            request: Request,
             z: int = Path(..., ge=0, le=30, description="Mercator tiles's zoom level"),
             x: int = Path(..., description="Mercator tiles's column"),
             y: int = Path(..., description="Mercator tiles's row"),
@@ -145,7 +146,7 @@ class VectorTilerFactory:
         ):
             """Return vector tile with custom function"""
             reader = self.reader(db_pool, tms=tms)
-            await reader.function(z, x, y, function)
+            await reader.function(z, x, y, function, dict(request.query_params))
 
     def tilejson(self):
         """Register tilejson endpoints."""

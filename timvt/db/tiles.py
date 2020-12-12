@@ -1,6 +1,7 @@
 """TiVTiler.db.tiles: tile reading"""
 
 from dataclasses import dataclass, field
+from typing import Dict
 
 import morecantile
 from asyncpg.pool import Pool
@@ -95,6 +96,8 @@ class VectorTileReader:
         bbox = self.tms.xy_bounds(tile)
         return await self._tile_from_bbox(bbox, columns, table)
 
-    async def function(self, tile_x: int, tile_y: int, tile_z: int, function: str):
+    async def function(
+        self, tile_x: int, tile_y: int, tile_z: int, function: str, query_params: Dict
+    ):
         """read vector tile with custom function"""
         pass
