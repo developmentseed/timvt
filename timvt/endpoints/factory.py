@@ -56,6 +56,7 @@ class VectorTilerFactory:
         self.tile()
         self.tilejson()
         self.index()
+        self.function()
 
     def url_for(self, request: Request, name: str, **path_params: Any) -> str:
         """Return full url (with prefix) for a specific endpoint."""
@@ -123,6 +124,28 @@ class VectorTilerFactory:
                 )
 
             return Response(content, media_type=MimeTypes.pbf.value, headers=headers)
+
+    def function(self):
+        """Register /func endpoints"""
+
+        @self.router.get(
+            "/func/tiles/{function}/{z}/{x}/{y}.pbf", **TILE_RESPONSE_PARAMS
+        )
+        @self.router.get(
+            "/func/tiles/{TileMatrixSetId}/{function}/{z}/{x}/{y}.pbf",
+            **TILE_RESPONSE_PARAMS
+        )
+        async def function(
+            z: int = Path(..., ge=0, le=30, description="Mercator tiles's zoom level"),
+            x: int = Path(..., description="Mercator tiles's column"),
+            y: int = Path(..., description="Mercator tiles's row"),
+            function: str = Path(..., description="Function name"),
+            tms: TileMatrixSet = Depends(self.tms_dependency),
+            db_pool: Pool = Depends(self.db_pool_dependency),
+        ):
+            """Return vector tile with custom function"""
+            reader = self.reader(db_pool, tms=tms)
+            await reader.function(z, x, y, function)
 
     def tilejson(self):
         """Register tilejson endpoints."""
