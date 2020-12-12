@@ -17,16 +17,17 @@ class VectorTileReader:
     """VectorTileReader"""
 
     db_pool: Pool
-    table: TableMetadata
     tms: TileMatrixSet = field(default_factory=lambda: WEB_MERCATOR_TMS)
 
-    async def _tile_from_bbox(self, bbox: BoundingBox, columns: str) -> bytes:
+    async def _tile_from_bbox(
+        self, bbox: BoundingBox, columns: str, table: TableMetadata
+    ) -> bytes:
         """return a vector tile (bytes) for the input bounds"""
         epsg = self.tms.crs.to_epsg()
         segSize = bbox.right - bbox.left
 
-        geometry_column = self.table.geometry_column
-        cols = self.table.properties
+        geometry_column = table.geometry_column
+        cols = table.properties
         if geometry_column in cols:
             del cols[geometry_column]
 
@@ -63,7 +64,7 @@ class VectorTileReader:
                     $7,
                     $8
                 ) AS geom, {colstring}
-                FROM {self.table.id} t, bounds
+                FROM {table.id} t, bounds
                 WHERE ST_Intersects(
                     ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
                 ) {limit}
@@ -86,8 +87,10 @@ class VectorTileReader:
 
         return bytes(content)
 
-    async def tile(self, tile_x: int, tile_y: int, tile_z: int, columns: str) -> bytes:
+    async def tile(
+        self, tile_x: int, tile_y: int, tile_z: int, columns: str, table: TableMetadata
+    ) -> bytes:
         """read vector tile"""
         tile = morecantile.Tile(tile_x, tile_y, tile_z)
         bbox = self.tms.xy_bounds(tile)
-        return await self._tile_from_bbox(bbox, columns)
+        return await self._tile_from_bbox(bbox, columns, table)

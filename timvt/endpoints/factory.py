@@ -109,9 +109,9 @@ class VectorTilerFactory:
             timings = []
             headers: Dict[str, str] = {}
 
-            reader = self.reader(db_pool, table=table, tms=tms)
+            reader = self.reader(db_pool, tms=tms)
             with Timer() as t:
-                content = await reader.tile(x, y, z, columns=columns)
+                content = await reader.tile(x, y, z, columns=columns, table=table)
             timings.append(("db-read", t.elapsed))
 
             if timings:
