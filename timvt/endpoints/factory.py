@@ -6,8 +6,14 @@ from typing import Any, Callable, Dict, List, Optional, Type
 from asyncpg.pool import Pool
 from morecantile import TileMatrixSet
 
+from timvt.db.functions import Function
 from timvt.db.tiles import VectorTileReader
-from timvt.dependencies import TableParams, TileMatrixSetParams, _get_db_pool
+from timvt.dependencies import (
+    FunctionParams,
+    TableParams,
+    TileMatrixSetParams,
+    _get_db_pool,
+)
 from timvt.models.mapbox import TileJSON
 from timvt.models.metadata import TableMetadata
 from timvt.ressources.enums import MimeTypes
@@ -39,6 +45,9 @@ class VectorTilerFactory:
 
     # Table dependency
     table_dependency: Callable[..., TableMetadata] = TableParams
+
+    # Function dependency
+    func_dependency: Callable[..., Function] = FunctionParams
 
     # Database pool dependency
     db_pool_dependency: Callable[..., Pool] = _get_db_pool
@@ -140,7 +149,7 @@ class VectorTilerFactory:
             z: int = Path(..., ge=0, le=30, description="Mercator tiles's zoom level"),
             x: int = Path(..., description="Mercator tiles's column"),
             y: int = Path(..., description="Mercator tiles's row"),
-            function: str = Path(..., description="Function name"),
+            function: Function = Depends(self.func_dependency),
             tms: TileMatrixSet = Depends(self.tms_dependency),
             db_pool: Pool = Depends(self.db_pool_dependency),
         ):

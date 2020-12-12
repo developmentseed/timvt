@@ -4,6 +4,7 @@ import logging
 
 from timvt import __version__ as timvt_version
 from timvt import settings
+from timvt.db import functions
 from timvt.db.catalog import table_index
 from timvt.db.events import close_db_connection, connect_to_db
 from timvt.endpoints import health, tiles, tms
@@ -38,6 +39,10 @@ if settings.CORS_ORIGINS:
 
 # Add GZIP compression by default.
 app.add_middleware(GZipMiddleware, minimum_size=0)
+
+
+# Register custom functions
+functions.register(functions.PostgresFunction(name="my-func", sql=""))
 
 
 # Register Start/Stop application event handler to setup/stop the database connection

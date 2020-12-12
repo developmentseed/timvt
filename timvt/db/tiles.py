@@ -7,6 +7,7 @@ import morecantile
 from asyncpg.pool import Pool
 from morecantile import BoundingBox, TileMatrixSet
 
+from timvt.db.functions import Function
 from timvt.models.metadata import TableMetadata
 from timvt.settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 
@@ -89,7 +90,7 @@ class VectorTileReader:
         return bytes(content)
 
     async def _tile_from_function(
-        self, bbox: BoundingBox, function: str, query_params
+        self, bbox: BoundingBox, function: Function, query_params
     ) -> bytes:
         pass
 
@@ -102,7 +103,12 @@ class VectorTileReader:
         return await self._tile_from_bbox(bbox, columns, table)
 
     async def function(
-        self, tile_x: int, tile_y: int, tile_z: int, function: str, query_params: Dict
+        self,
+        tile_x: int,
+        tile_y: int,
+        tile_z: int,
+        function: Function,
+        query_params: Dict,
     ) -> bytes:
         """read vector tile with custom function"""
         tile = morecantile.Tile(tile_x, tile_y, tile_z)

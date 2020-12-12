@@ -7,6 +7,8 @@ from asyncpg.pool import Pool
 from morecantile import Tile, TileMatrixSet, tms
 
 from timvt.custom import tms as custom_tms
+from timvt.db.functions import Function
+from timvt.db.functions import Registry as FunctionRegistry
 from timvt.models.metadata import TableMetadata
 
 from fastapi import HTTPException, Path, Query
@@ -57,6 +59,14 @@ def TableParams(
                 return TableMetadata(**r)
 
     raise HTTPException(status_code=404, detail=f"Table '{table}' not found.")
+
+
+def FunctionParams(function: str = Path(..., description="Function name")) -> Function:
+    """Function"""
+    func = FunctionRegistry.get(function)
+    if not func:
+        raise HTTPException(status_code=404, detail=f"Function '{function}' not found.")
+    return func
 
 
 def _get_db_pool(request: Request) -> Pool:
