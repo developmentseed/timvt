@@ -42,7 +42,7 @@ app.add_middleware(GZipMiddleware, minimum_size=0)
 
 
 # Register custom functions
-functions.register(functions.PostgresFunction(name="my-func", sql=""))
+functions.register(functions.SqlFunction(name="my-func", sql=""))
 
 
 # Register Start/Stop application event handler to setup/stop the database connection

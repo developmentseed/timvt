@@ -17,7 +17,7 @@ class Function(abc.ABC):
 
 
 @dataclass
-class PostgresFunction(Function):
+class SqlFunction(Function):
     """postgres function"""
 
     sql: str
