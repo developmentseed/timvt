@@ -23,13 +23,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt install libpq-dev
+          sudo apt install libpq-dev postgis
           python -m pip install --upgrade pip
           python -m pip install tox codecov pre-commit
 
       # Run tox using the version of Python in `PATH`
       - name: Run Tox
-        run: pip install -e .[test] && pytest -v
+        run: tox -e py
 
       # Run pre-commit (only for python-3.7)
       - name: run pre-commit
