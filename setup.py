@@ -19,6 +19,7 @@ extra_reqs = {
         "pytest-cov",
         "pytest-asyncio",
         "requests",
+        "psycopg2-binary",
         "pytest-pgsql",
         "mapbox-vector-tile",
     ],
