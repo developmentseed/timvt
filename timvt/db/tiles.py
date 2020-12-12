@@ -88,6 +88,11 @@ class VectorTileReader:
 
         return bytes(content)
 
+    async def _tile_from_function(
+        self, bbox: BoundingBox, function: str, query_params
+    ) -> bytes:
+        pass
+
     async def tile(
         self, tile_x: int, tile_y: int, tile_z: int, columns: str, table: TableMetadata
     ) -> bytes:
@@ -98,6 +103,8 @@ class VectorTileReader:
 
     async def function(
         self, tile_x: int, tile_y: int, tile_z: int, function: str, query_params: Dict
-    ):
+    ) -> bytes:
         """read vector tile with custom function"""
-        pass
+        tile = morecantile.Tile(tile_x, tile_y, tile_z)
+        bbox = self.tms.xy_bounds(tile)
+        return await self._tile_from_function(bbox, function, query_params)
