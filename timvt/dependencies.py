@@ -3,8 +3,8 @@
 import re
 from enum import Enum
 
-from asyncpg.pool import Pool
 from morecantile import Tile, TileMatrixSet, tms
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from timvt.custom import tms as custom_tms
 from timvt.models.metadata import TableMetadata
@@ -59,5 +59,5 @@ def TableParams(
     raise HTTPException(status_code=404, detail=f"Table '{table}' not found.")
 
 
-def _get_db_pool(request: Request) -> Pool:
+def _get_db_pool(request: Request) -> AsyncEngine:
     return request.app.state.pool

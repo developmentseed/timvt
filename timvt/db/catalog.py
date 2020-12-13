@@ -1,9 +1,9 @@
 """TiVTiler.db.catalog: Table catalog."""
 
-import json
 from typing import Sequence
 
-from asyncpg.pool import Pool
+from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.sql import text
 
 sql_query = """
     WITH geo_tables AS (
@@ -57,10 +57,9 @@ sql_query = """
 """
 
 
-async def table_index(db_pool: Pool) -> Sequence:
+async def table_index(db_pool: AsyncEngine) -> Sequence:
     """Fetch Table index."""
-    async with db_pool.acquire() as conn:
-        q = await conn.prepare(sql_query)
-        content = await q.fetchval()
-
-    return json.loads(content)
+    async with db_pool.begin() as conn:
+        q = await conn.execute(text(sql_query))
+        content = q.first()[0]
+    return content

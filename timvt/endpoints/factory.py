@@ -3,8 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Type
 
-from asyncpg.pool import Pool
 from morecantile import TileMatrixSet
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from timvt.db.tiles import VectorTileReader
 from timvt.dependencies import TableParams, TileMatrixSetParams, _get_db_pool
@@ -41,7 +41,7 @@ class VectorTilerFactory:
     table_dependency: Callable[..., TableMetadata] = TableParams
 
     # Database pool dependency
-    db_pool_dependency: Callable[..., Pool] = _get_db_pool
+    db_pool_dependency: Callable[..., AsyncEngine] = _get_db_pool
 
     # Router Prefix is needed to find the path for routes when prefixed
     # e.g if you mount the route with `/foo` prefix, set router_prefix to foo
@@ -102,7 +102,7 @@ class VectorTilerFactory:
             y: int = Path(..., description="Mercator tiles's row"),
             tms: TileMatrixSet = Depends(self.tms_dependency),
             table: TableParams = Depends(self.table_dependency),
-            db_pool: Pool = Depends(self.db_pool_dependency),
+            db_pool: AsyncEngine = Depends(self.db_pool_dependency),
             columns: str = None,
         ):
             """Return vector tile."""

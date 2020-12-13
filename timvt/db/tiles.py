@@ -3,8 +3,9 @@
 from dataclasses import dataclass, field
 
 import morecantile
-from asyncpg.pool import Pool
 from morecantile import BoundingBox, TileMatrixSet
+from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.sql import text
 
 from timvt.models.metadata import TableMetadata
 from timvt.settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
@@ -16,7 +17,7 @@ WEB_MERCATOR_TMS = morecantile.tms.get("WebMercatorQuad")
 class VectorTileReader:
     """VectorTileReader"""
 
-    db_pool: Pool
+    db_pool: AsyncEngine
     table: TableMetadata
     tms: TileMatrixSet = field(default_factory=lambda: WEB_MERCATOR_TMS)
 
@@ -47,21 +48,21 @@ class VectorTileReader:
                 SELECT
                     ST_Segmentize(
                         ST_MakeEnvelope(
-                            $1,
-                            $2,
-                            $3,
-                            $4,
-                            $5
+                            :xmin,
+                            :ymin,
+                            :xmax,
+                            :ymax,
+                            :epsg
                         ),
-                        $6
+                        :segSize
                     ) AS geom
             ),
             mvtgeom AS (
                 SELECT ST_AsMVTGeom(
-                    ST_Transform(t.{geometry_column}, $5),
+                    ST_Transform(t.{geometry_column}, CAST(:epsg AS INT)),
                     bounds.geom,
-                    $7,
-                    $8
+                    :tileRes,
+                    :tileBuffer
                 ) AS geom, {colstring}
                 FROM {self.table.id} t, bounds
                 WHERE ST_Intersects(
@@ -71,18 +72,19 @@ class VectorTileReader:
             SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
         """
 
-        async with self.db_pool.acquire() as conn:
-            q = await conn.prepare(sql_query)
-            content = await q.fetchval(
-                bbox.left,  # 1
-                bbox.bottom,  # 2
-                bbox.right,  # 3
-                bbox.top,  # 4
-                epsg,  # 5
-                segSize,  # 6
-                TILE_RESOLUTION,  # 7
-                TILE_BUFFER,  # 8
-            )
+        async with self.db_pool.begin() as conn:
+            params = {
+                "xmin": bbox.left,
+                "ymin": bbox.bottom,
+                "xmax": bbox.right,
+                "ymax": bbox.top,
+                "epsg": epsg,
+                "segSize": segSize,
+                "tileRes": TILE_RESOLUTION,
+                "tileBuffer": TILE_BUFFER,
+            }
+            q = await conn.execute(text(sql_query), params)
+            content = q.first()[0]
 
         return bytes(content)
 
