@@ -89,11 +89,6 @@ class VectorTileReader:
 
         return bytes(content)
 
-    async def _tile_from_function(
-        self, bbox: BoundingBox, function: Function, query_params
-    ) -> bytes:
-        pass
-
     async def tile(
         self, tile_x: int, tile_y: int, tile_z: int, columns: str, table: TableMetadata
     ) -> bytes:
