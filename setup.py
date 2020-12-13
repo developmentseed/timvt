@@ -8,7 +8,8 @@ with open("README.md") as f:
 inst_reqs = [
     "fastapi",
     "jinja2",
-    "sqlalchemy==1.4.0b1" "morecantile~=2.0.1",
+    "sqlalchemy==1.4.0b1",
+    "morecantile~=2.0.1",
     "email-validator",
     "dataclasses;python_version<'3.7'",
 ]
