@@ -3,6 +3,8 @@ import abc
 from dataclasses import dataclass
 from typing import ClassVar, Dict
 
+from morecantile.models import BoundingBox
+
 
 @dataclass  # type: ignore
 class Function(abc.ABC):
@@ -11,8 +13,8 @@ class Function(abc.ABC):
     name: str
 
     @abc.abstractmethod
-    async def execute(self, *args, **kwargs) -> bytes:
-        """execute"""
+    async def __call__(self, bbox: BoundingBox, **kwargs) -> bytes:
+        """call the function"""
         ...
 
 
@@ -22,9 +24,9 @@ class SqlFunction(Function):
 
     sql: str
 
-    async def execute(self, *args, **kwargs):
-        """execute"""
-        pass
+    async def __call__(self, bbox: BoundingBox, **kwargs):
+        """call the function"""
+        ...
 
 
 @dataclass
