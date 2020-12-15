@@ -3,7 +3,7 @@
 import json
 from typing import Sequence
 
-from asyncpg.pool import Pool
+from buildpg.asyncpg import BuildPgPool
 
 sql_query = """
     WITH geo_tables AS (
@@ -57,7 +57,7 @@ sql_query = """
 """
 
 
-async def table_index(db_pool: Pool) -> Sequence:
+async def table_index(db_pool: BuildPgPool) -> Sequence:
     """Fetch Table index."""
     async with db_pool.acquire() as conn:
         q = await conn.prepare(sql_query)

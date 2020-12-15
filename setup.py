@@ -6,6 +6,7 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
+    "buildpg",
     "fastapi",
     "jinja2",
     "asyncpg",

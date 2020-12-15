@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Type
 
-from asyncpg.pool import Pool
+from buildpg.asyncpg import BuildPgPool
 from morecantile import TileMatrixSet
 
 from timvt.db.functions import Function
@@ -50,7 +50,7 @@ class VectorTilerFactory:
     func_dependency: Callable[..., Function] = FunctionParams
 
     # Database pool dependency
-    db_pool_dependency: Callable[..., Pool] = _get_db_pool
+    db_pool_dependency: Callable[..., BuildPgPool] = _get_db_pool
 
     # Router Prefix is needed to find the path for routes when prefixed
     # e.g if you mount the route with `/foo` prefix, set router_prefix to foo
@@ -112,7 +112,7 @@ class VectorTilerFactory:
             y: int = Path(..., description="Mercator tiles's row"),
             tms: TileMatrixSet = Depends(self.tms_dependency),
             table: TableParams = Depends(self.table_dependency),
-            db_pool: Pool = Depends(self.db_pool_dependency),
+            db_pool: BuildPgPool = Depends(self.db_pool_dependency),
             columns: str = None,
         ):
             """Return vector tile."""
@@ -151,7 +151,7 @@ class VectorTilerFactory:
             y: int = Path(..., description="Mercator tiles's row"),
             function: Function = Depends(self.func_dependency),
             tms: TileMatrixSet = Depends(self.tms_dependency),
-            db_pool: Pool = Depends(self.db_pool_dependency),
+            db_pool: BuildPgPool = Depends(self.db_pool_dependency),
         ):
             """Return vector tile with custom function"""
             reader = self.reader(db_pool, tms=tms)

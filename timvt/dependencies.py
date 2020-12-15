@@ -3,7 +3,7 @@
 import re
 from enum import Enum
 
-from asyncpg.pool import Pool
+from buildpg import asyncpg
 from morecantile import Tile, TileMatrixSet, tms
 
 from timvt.custom import tms as custom_tms
@@ -69,5 +69,5 @@ def FunctionParams(function: str = Path(..., description="Function name")) -> Fu
     return func
 
 
-def _get_db_pool(request: Request) -> Pool:
+def _get_db_pool(request: Request) -> asyncpg.BuildPgPool:
     return request.app.state.pool
