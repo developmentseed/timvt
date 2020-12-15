@@ -1,8 +1,9 @@
 """TiVTiler.db.functions: custom functions"""
 import abc
 from dataclasses import dataclass
-from typing import ClassVar, Dict
+from typing import Any, ClassVar, Dict
 
+from buildpg.asyncpg import BuildPgPool
 from morecantile.models import BoundingBox
 
 
@@ -13,7 +14,7 @@ class Function(abc.ABC):
     name: str
 
     @abc.abstractmethod
-    async def __call__(self, bbox: BoundingBox, **kwargs) -> bytes:
+    async def __call__(self, bbox: BoundingBox, resource: Any, **kwargs) -> bytes:
         """call the function"""
         ...
 
@@ -24,9 +25,18 @@ class SqlFunction(Function):
 
     sql: str
 
-    async def __call__(self, bbox: BoundingBox, **kwargs):
+    async def __call__(self, bbox: BoundingBox, resource: BuildPgPool, **kwargs):
         """call the function"""
-        ...
+        async with resource.acquire() as conn:
+            content = await conn.fetchval_b(
+                self.sql,
+                xmin=bbox.left,
+                ymin=bbox.bottom,
+                xmax=bbox.right,
+                ymax=bbox.top,
+                **kwargs
+            )
+        return content
 
 
 @dataclass
