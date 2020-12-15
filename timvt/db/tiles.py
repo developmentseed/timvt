@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 
 import morecantile
-from asyncpg.pool import Pool
+from buildpg.asyncpg import BuildPgPool
 from morecantile import BoundingBox, TileMatrixSet
 
 from timvt.models.metadata import TableMetadata
@@ -16,7 +16,7 @@ WEB_MERCATOR_TMS = morecantile.tms.get("WebMercatorQuad")
 class VectorTileReader:
     """VectorTileReader"""
 
-    db_pool: Pool
+    db_pool: BuildPgPool
     table: TableMetadata
     tms: TileMatrixSet = field(default_factory=lambda: WEB_MERCATOR_TMS)
 
@@ -47,21 +47,21 @@ class VectorTileReader:
                 SELECT
                     ST_Segmentize(
                         ST_MakeEnvelope(
-                            $1,
-                            $2,
-                            $3,
-                            $4,
-                            $5
+                            :xmin,
+                            :ymin,
+                            :xmax,
+                            :ymax,
+                            :epsg
                         ),
-                        $6
+                        :seg_size
                     ) AS geom
             ),
             mvtgeom AS (
                 SELECT ST_AsMVTGeom(
-                    ST_Transform(t.{geometry_column}, $5),
+                    ST_Transform(t.{geometry_column}, :epsg),
                     bounds.geom,
-                    $7,
-                    $8
+                    :tile_resolution,
+                    :tile_buffer
                 ) AS geom, {colstring}
                 FROM {self.table.id} t, bounds
                 WHERE ST_Intersects(
@@ -72,16 +72,16 @@ class VectorTileReader:
         """
 
         async with self.db_pool.acquire() as conn:
-            q = await conn.prepare(sql_query)
-            content = await q.fetchval(
-                bbox.left,  # 1
-                bbox.bottom,  # 2
-                bbox.right,  # 3
-                bbox.top,  # 4
-                epsg,  # 5
-                segSize,  # 6
-                TILE_RESOLUTION,  # 7
-                TILE_BUFFER,  # 8
+            content = await conn.fetchval_b(
+                sql_query,
+                xmin=bbox.left,
+                ymin=bbox.bottom,
+                xmax=bbox.right,
+                ymax=bbox.top,
+                epsg=epsg,
+                seg_size=segSize,
+                tile_resolution=TILE_RESOLUTION,
+                tile_buffer=TILE_BUFFER,
             )
 
         return bytes(content)
