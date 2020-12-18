@@ -17,6 +17,13 @@ class SqlFunction(Function):
 
     sql: str
 
+    @classmethod
+    def from_file(cls, name: str, infile: str):
+        """load sql from file"""
+        with open(infile) as f:
+            sql = f.read()
+        return cls(name, sql)
+
 
 @dataclass
 class Registry:
