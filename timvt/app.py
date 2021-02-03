@@ -6,8 +6,8 @@ from timvt import __version__ as timvt_version
 from timvt import settings
 from timvt.db.catalog import table_index
 from timvt.db.events import close_db_connection, connect_to_db
-from timvt.endpoints import health, tiles, tms
-from timvt.ressources.responses import JSONIndented
+from timvt.endpoints import demo, health, tiles, tms
+from timvt.resources.responses import JSONIndented
 
 from fastapi import FastAPI
 
@@ -56,6 +56,7 @@ async def shutdown_event():
 
 
 # Register endpoints.
-app.include_router(health.router)
 app.include_router(tiles.router, tags=["Tiles"])
-app.include_router(tms.router)
+app.include_router(tms.router, tags=["TileMatrixSets"])
+app.include_router(demo.router, tags=["demo"])
+app.include_router(health.router, tags=["Health Check"])

@@ -3,25 +3,6 @@
 import mapbox_vector_tile
 
 
-def test_index(app):
-    """Test /Index."""
-    response = app.get("/index")
-    assert response.status_code == 200
-
-    resp_json = response.json()
-    layer = resp_json[0]
-
-    assert layer["id"] == f"{layer['schema']}.landsat_wrs"
-    assert layer["properties"] == {
-        "id": "varchar",
-        "pr": "varchar",
-        "row": "int4",
-        "geom": "geometry",
-        "path": "int4",
-        "ogc_fid": "int4",
-    }
-
-
 def test_tilejson(app):
     """Test TileJSON endpoint."""
     response = app.get("/landsat_wrs.json")
