@@ -1,7 +1,7 @@
 **Work In Progress**
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/10407788/85882807-ed7f7580-b7ad-11ea-9f7a-86b989761d79.png"/>
+  <img src="https://user-images.githubusercontent.com/10407788/106793743-d5b27e80-6625-11eb-924a-77c54abff993.jpg"/>
   <p align="center">A lightweight PostGIS based dynamic vector tile server.</p>
 </p>
 
@@ -35,7 +35,7 @@ Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) fr
 
 `timvt` is mostly inspired from the awesome [urbica/martin](https://github.com/urbica/martin) and [CrunchyData](https://github.com/CrunchyData/pg_tileserv) projects.
 
-#### Features
+## Features
 
 - Multiple TileMatrixSets via [morecantile](https://github.com/developmentseed/morecantile). Default is set to WebMercatorQuad which is the usual Web Mercator projection used in most of Wep Map libraries.)
 - Built with FastAPI
@@ -43,12 +43,12 @@ Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) fr
 
 ## Requirements and Setup
 
-#### Python Requirements
+### Python Requirements
 - [FastAPI](https://fastapi.tiangolo.com): *Modern, fast (high-performance), web framework for building APIs*
 - [Morecantile](https://github.com/developmentseed/morecantile) (Rasterio/GDAL): *Construct and use map tile grids (a.k.a TileMatrixSet / TMS)*
 - [asyncpg](https://github.com/MagicStack/asyncpg) *A fast PostgreSQL Database Client Library for Python/asyncio*
 
-#### PostGIS/Postgres
+### PostGIS/Postgres
 
 `timvt` rely mostly on [`ST_AsMVT`](https://postgis.net/docs/ST_AsMVT.html) function and will need PostGIS >= 2.5.
 
@@ -69,7 +69,7 @@ $ pip install -e .
 
 To be able to create Vector Tile, the application will need access to the PostGIS database. `timvt` uses [starlette](https://www.starlette.io/config/)'s configuration pattern which make use of environment variable and/or `.env` file to pass variable to the application.
 
-Example of `.env` file can be found in [.env.example](.env.example)
+Example of `.env` file can be found in [.env.example](https://github.com/developmentseed/timvt/blob/master/.env.example)
 ```
 POSTGRES_USER=username
 POSTGRES_PASS=password
@@ -103,7 +103,7 @@ $ docker-compose up --build
 
 
 
-# Project structure
+## Project structure
 
 ```
 demo/                            - Leaflet/Mapbox demo

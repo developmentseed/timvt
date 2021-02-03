@@ -7,8 +7,8 @@ services:
       context: .
       dockerfile: Dockerfiles/app/Dockerfile
     environment:
-      - APP_HOST=0.0.0.0
-      - APP_PORT=8081
+      - HOST=0.0.0.0
+      - PORT=8081
       - RELOAD=true
       - PYTHONWARNINGS=ignore
       - ENVIRONMENT=local
