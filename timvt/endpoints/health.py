@@ -1,4 +1,4 @@
-"""TiVTiler.endpoints.health: health check endpoints."""
+"""timvt.endpoints.health: health check endpoints."""
 
 from pydantic import BaseModel
 

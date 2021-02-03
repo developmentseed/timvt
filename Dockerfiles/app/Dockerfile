@@ -12,7 +12,7 @@ COPY README.md /app/README.md
 COPY timvt/ /app/timvt/
 COPY setup.py /app/setup.py
 
-RUN pip install -e /app/.["server"] --no-cache-dir
+RUN pip install -e /app/. --no-cache-dir
 
 ENV APP_HOST=0.0.0.0
 ENV APP_PORT=80

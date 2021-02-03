@@ -1,1 +1,1 @@
-"""TiVTiler.endpoints."""
+"""timvt.endpoints."""

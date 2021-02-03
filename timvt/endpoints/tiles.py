@@ -1,4 +1,4 @@
-"""TiVTiler.endpoints.tiles: Vector Tiles endpoint."""
+"""timvt.endpoints.tiles: Vector Tiles endpoint."""
 
 from timvt.dependencies import TableParams
 from timvt.endpoints.factory import VectorTilerFactory

@@ -1,4 +1,4 @@
-"""TiVTiler.db.events: database events."""
+"""timvt.db.events: database events."""
 
 import logging
 

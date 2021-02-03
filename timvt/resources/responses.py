@@ -1,4 +1,4 @@
-"""TiVTiler.ressources.responses: Response models."""
+"""timvt.resources.responses: Response models."""
 
 import json
 from typing import Any

@@ -33,12 +33,13 @@
 
 Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) framework, titiler is written in Python using async/await asynchronous code to improve the performances and handle heavy loads.
 
-TiVTiler is mostly inspired from the awesome [urbica/martin](https://github.com/urbica/martin) and [CrunchyData](https://github.com/CrunchyData/pg_tileserv) projects.
+`timvt` is mostly inspired from the awesome [urbica/martin](https://github.com/urbica/martin) and [CrunchyData](https://github.com/CrunchyData/pg_tileserv) projects.
 
 #### Features
 
 - Multiple TileMatrixSets via [morecantile](https://github.com/developmentseed/morecantile). Default is set to WebMercatorQuad which is the usual Web Mercator projection used in most of Wep Map libraries.)
-- ...
+- Built with FastAPI
+- Async API
 
 ## Requirements and Setup
 
@@ -49,7 +50,7 @@ TiVTiler is mostly inspired from the awesome [urbica/martin](https://github.com/
 
 #### PostGIS/Postgres
 
-TiVTiler rely mostly on [`ST_AsMVT`](https://postgis.net/docs/ST_AsMVT.html) function and will need PostGIS >= 2.5.
+`timvt` rely mostly on [`ST_AsMVT`](https://postgis.net/docs/ST_AsMVT.html) function and will need PostGIS >= 2.5.
 
 If you want more info about `ST_AsMVT` function or on the subject of creating Vector Tile from PostGIS, please read this great article from Paul Ramsey: https://info.crunchydata.com/blog/dynamic-vector-tiles-from-postgis
 
@@ -61,12 +62,12 @@ $ git clone https://github.com/developmentseed/timvt.git && cd timvt
 ```
 2. Install
 ```
-# Install TiVTiler dependencies and Uvicorn (a lightning-fast ASGI server)
-$ pip install -e .["server"]
+# Install timvt dependencies and Uvicorn (a lightning-fast ASGI server)
+$ pip install -e .
 ```
 3. Configuration
 
-To be able to create Vector Tile, the application will need access to the PostGIS database. TiVTiler uses [starlette](https://www.starlette.io/config/)'s configuration pattern which make use of environment variable and/or `.env` file to pass variable to the application.
+To be able to create Vector Tile, the application will need access to the PostGIS database. `timvt` uses [starlette](https://www.starlette.io/config/)'s configuration pattern which make use of environment variable and/or `.env` file to pass variable to the application.
 
 Example of `.env` file can be found in [.env.example](.env.example)
 ```
@@ -109,12 +110,12 @@ demo/                            - Leaflet/Mapbox demo
  │
 Dockerfiles/                     - Dockerfiles.
  ├── app/
- │   └── Dockerfile              - TiVTiler Application dockerfile (python:3.8-slim).
+ │   └── Dockerfile              - timvt Application dockerfile (python:3.8-slim).
  ├── db/
  │   ├── countries.sql           - Natural Earth test dataset.
  │   └── Dockerfile              - PostGIS dockerfile (postgis/postgis:12-3.0).
  │
-tests/                           - TiVTiler Python Unitest suite.
+tests/                           - timvt Python Unitest suite.
  │
 timvt/                           - Python module.
  ├── endpoints/                  - Application routes.

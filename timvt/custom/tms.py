@@ -1,4 +1,4 @@
-"""TiVTiler.custom.tms: Custom TileMatrixSet."""
+"""timvt.custom.tms: Custom TileMatrixSet."""
 
 import morecantile
 from rasterio.crs import CRS
