@@ -1,4 +1,4 @@
-"""Setup TiVTiler."""
+"""Setup timvt."""
 
 from setuptools import find_packages, setup
 
@@ -7,25 +7,25 @@ with open("README.md") as f:
 
 inst_reqs = [
     "buildpg",
-    "fastapi",
-    "jinja2",
+    "fastapi[all]",
     "asyncpg",
-    "morecantile~=2.0.1",
-    "email-validator",
+    "morecantile>=2.1,<2.2",
     "dataclasses;python_version<'3.7'",
 ]
+
+test_reqs = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "requests",
+    "psycopg2",
+    "pytest-pgsql",
+    "mapbox-vector-tile",
+]
+
 extra_reqs = {
-    "test": [
-        "pytest",
-        "pytest-cov",
-        "pytest-asyncio",
-        "requests",
-        "psycopg2-binary",
-        "pytest-pgsql",
-        "mapbox-vector-tile",
-    ],
-    "dev": ["pytest", "pytest-cov", "pytest-asyncio", "requests", "pre-commit"],
-    "server": ["uvicorn"],
+    "test": test_reqs,
+    "dev": test_reqs + ["pre-commit"],
     "docs": ["nbconvert", "mkdocs", "mkdocs-material", "mkdocs-jupyter", "pygments"],
 }
 
@@ -36,7 +36,7 @@ setup(
     description=u"",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    python_requires=">=3",
+    python_requires=">=3.6",
     classifiers=[
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",

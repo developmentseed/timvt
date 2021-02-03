@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM tiangolo/uvicorn-gunicorn:python3.8
 
 # Any python libraries that require system libraries to be installed will likely
 # need the following packages in order to build
@@ -8,15 +8,11 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     git
 
-COPY README.md /app/README.md
-COPY timvt/ /app/timvt/
-COPY setup.py /app/setup.py
+COPY README.md README.md
+COPY timvt/ timvt/
+COPY setup.py setup.py
 
-RUN pip install -e /app/.["server"] --no-cache-dir
+RUN pip install -e . --no-cache-dir
 
-ENV APP_HOST=0.0.0.0
-ENV APP_PORT=80
-
-ENV RELOAD=''
-
-CMD uvicorn timvt.app:app --host=${APP_HOST} --port=${APP_PORT} ${RELOAD:+--reload}
+ENV MODULE_NAME timvt.app
+ENV VARIABLE_NAME app

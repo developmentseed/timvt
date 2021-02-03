@@ -1,4 +1,4 @@
-"""TiVTiler.db.tiles: tile reading"""
+"""timvt.db.tiles: tile reading"""
 
 from dataclasses import dataclass, field
 

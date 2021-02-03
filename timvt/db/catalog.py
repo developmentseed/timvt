@@ -1,4 +1,4 @@
-"""TiVTiler.db.catalog: Table catalog."""
+"""timvt.db.catalog: Table catalog."""
 
 import json
 from typing import Sequence

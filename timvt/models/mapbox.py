@@ -1,4 +1,4 @@
-"""TiVTiler.models.mapbox: Mapbox models."""
+"""timvt.models.mapbox: Mapbox models."""
 
 from typing import List, Optional, Tuple
 

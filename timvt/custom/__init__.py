@@ -1,1 +1,1 @@
-"""TiVTiler.custom"""
+"""timvt.custom"""

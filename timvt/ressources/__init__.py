@@ -1,1 +1,0 @@
-"""TiVTiler.ressources."""

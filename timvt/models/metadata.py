@@ -1,4 +1,4 @@
-"""TiVTiler Metadata models."""
+"""timvt Metadata models."""
 
 from typing import Dict, Optional
 

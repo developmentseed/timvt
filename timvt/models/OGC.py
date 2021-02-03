@@ -1,11 +1,11 @@
-"""TiVTiler.models.OGC: Open GeoSpatial Consortium models."""
+"""timvt.models.OGC: Open GeoSpatial Consortium models."""
 
 
 from typing import List
 
 from pydantic import AnyHttpUrl, BaseModel
 
-from ..ressources.enums import MimeTypes
+from ..resources.enums import MimeTypes
 
 
 class TileMatrixSetLink(BaseModel):

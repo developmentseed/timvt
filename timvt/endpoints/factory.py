@@ -1,7 +1,7 @@
-"""TiVTiler.endpoints.factory: router factories."""
+"""timvt.endpoints.factory: router factories."""
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, Optional, Type
 
 from buildpg.asyncpg import BuildPgPool
 from morecantile import TileMatrixSet
@@ -10,7 +10,7 @@ from timvt.db.tiles import VectorTileReader
 from timvt.dependencies import TableParams, TileMatrixSetParams, _get_db_pool
 from timvt.models.mapbox import TileJSON
 from timvt.models.metadata import TableMetadata
-from timvt.ressources.enums import MimeTypes
+from timvt.resources.enums import MimeTypes
 from timvt.utils import Timer
 
 from fastapi import APIRouter, Depends, Path, Query
@@ -55,7 +55,6 @@ class VectorTilerFactory:
         """Register Tiler Routes."""
         self.tile()
         self.tilejson()
-        self.index()
 
     def url_for(self, request: Request, name: str, **path_params: Any) -> str:
         """Return full url (with prefix) for a specific endpoint."""
@@ -64,27 +63,6 @@ class VectorTilerFactory:
         if self.router_prefix:
             base_url += self.router_prefix.lstrip("/")
         return url_path.make_absolute_url(base_url=base_url)
-
-    ############################################################################
-    # /index
-    ############################################################################
-    def index(self):
-        """Register /index endpoint"""
-
-        @self.router.get(
-            "/index",
-            response_model=List[TableMetadata],
-            description="Return available tables.",
-            deprecated=True,
-        )
-        async def display_index(request: Request):
-            """Return JSON with available table metadata. """
-            return [
-                TableMetadata(
-                    **table, link=self.url_for(request, "tilejson", table=table["id"])
-                )
-                for table in request.app.state.Catalog
-            ]
 
     ############################################################################
     # /tiles

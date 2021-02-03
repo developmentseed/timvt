@@ -1,4 +1,4 @@
-"""TiVTiler.endpoint.tms: TileMatrixSet routes."""
+"""timvt.endpoint.tms: TileMatrixSet routes."""
 
 from morecantile.models import TileMatrixSet
 

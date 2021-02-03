@@ -1,5 +1,5 @@
 """
-TiVTiler config.
+TiMVT config.
 
 TiVTiler uses starlette.config to either get settings from `.env` or environment variables
 see: https://www.starlette.io/config/
@@ -10,7 +10,7 @@ from starlette.config import Config
 
 config = Config(".env")
 
-APP_NAME = config("APP_NAME", cast=str, default="TiVTiler")
+APP_NAME = config("APP_NAME", cast=str, default="TiMVT")
 ENVIRONMENT = config("ENVIRONMENT", cast=str, default="production")
 DEBUG = config("DEBUG", cast=bool, default=False)
 

@@ -1,4 +1,4 @@
-"""TiVTiler Enums."""
+"""timvt.resources.enums."""
 
 from enum import Enum
 
