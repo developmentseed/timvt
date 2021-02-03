@@ -7,9 +7,15 @@ from buildpg.asyncpg import BuildPgPool
 from morecantile import TileMatrixSet
 
 from timvt.db.tiles import VectorTileReader
-from timvt.dependencies import TableParams, TileMatrixSetParams, _get_db_pool
+from timvt.dependencies import (
+    TableParams,
+    TileMatrixSetNames,
+    TileMatrixSetParams,
+    _get_db_pool,
+)
 from timvt.models.mapbox import TileJSON
 from timvt.models.metadata import TableMetadata
+from timvt.models.OGC import TileMatrixSetList
 from timvt.resources.enums import MimeTypes
 from timvt.utils import Timer
 
@@ -145,3 +151,78 @@ class VectorTilerFactory:
                 "name": table.id,
                 "tiles": [tile_endpoint],
             }
+
+
+@dataclass
+class TMSFactory:
+    """TileMatrixSet endpoints Factory."""
+
+    # Enum of supported TMS
+    supported_tms: Type[TileMatrixSetNames] = TileMatrixSetNames
+
+    # TileMatrixSet dependency
+    tms_dependency: Callable[..., TileMatrixSet] = TileMatrixSetParams
+
+    # FastAPI router
+    router: APIRouter = field(default_factory=APIRouter)
+
+    # Router Prefix is needed to find the path for /tile if the TilerFactory.router is mounted
+    # with other router (multiple `.../tile` routes).
+    # e.g if you mount the route with `/cog` prefix, set router_prefix to cog and
+    router_prefix: str = ""
+
+    def __post_init__(self):
+        """Post Init: register route and configure specific options."""
+        self.register_routes()
+
+    def url_for(self, request: Request, name: str, **path_params: Any) -> str:
+        """Return full url (with prefix) for a specific endpoint."""
+        url_path = self.router.url_path_for(name, **path_params)
+        base_url = str(request.base_url)
+        if self.router_prefix:
+            base_url += self.router_prefix.lstrip("/")
+        return url_path.make_absolute_url(base_url=base_url)
+
+    def register_routes(self):
+        """Register TMS endpoint routes."""
+
+        @self.router.get(
+            r"/tileMatrixSets",
+            response_model=TileMatrixSetList,
+            response_model_exclude_none=True,
+        )
+        async def TileMatrixSet_list(request: Request):
+            """
+            Return list of supported TileMatrixSets.
+
+            Specs: http://docs.opengeospatial.org/per/19-069.html#_tilematrixsets
+            """
+            return {
+                "tileMatrixSets": [
+                    {
+                        "id": tms.name,
+                        "title": tms.name,
+                        "links": [
+                            {
+                                "href": self.url_for(
+                                    request,
+                                    "TileMatrixSet_info",
+                                    TileMatrixSetId=tms.name,
+                                ),
+                                "rel": "item",
+                                "type": "application/json",
+                            }
+                        ],
+                    }
+                    for tms in self.supported_tms
+                ]
+            }
+
+        @self.router.get(
+            r"/tileMatrixSets/{TileMatrixSetId}",
+            response_model=TileMatrixSet,
+            response_model_exclude_none=True,
+        )
+        async def TileMatrixSet_info(tms: TileMatrixSet = Depends(self.tms_dependency)):
+            """Return TileMatrixSet JSON document."""
+            return tms
