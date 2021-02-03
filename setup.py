@@ -18,7 +18,7 @@ test_reqs = [
     "pytest-cov",
     "pytest-asyncio",
     "requests",
-    "psycopg2-binary",
+    "psycopg2",
     "pytest-pgsql",
     "mapbox-vector-tile",
 ]
