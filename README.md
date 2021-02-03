@@ -99,7 +99,7 @@ $ docker-compose up --build
 
 `:endpoint:/docs`
 
-![](https://user-images.githubusercontent.com/10407788/85869490-be5f0900-b799-11ea-91aa-1d3ff95a46b4.png)
+![](https://user-images.githubusercontent.com/10407788/106812010-2681a180-663d-11eb-8fe9-9ed2de6e0ddd.png)
 
 
 
@@ -120,16 +120,18 @@ tests/                           - timvt Python Unitest suite.
 timvt/                           - Python module.
  ├── endpoints/                  - Application routes.
  │   ├── demo.py                 - Demo web pages.
+ │   ├── factory.py              - Tile endpoints factory.
  │   ├── health.py               - Health check endpoint.
  │   ├── index.py                - Table metadata and list.
  │   ├── tiles.py                - Tile related endpoints.
  │   └── tms.py                  - TileMatrixSet list and metadata.
+ │
  ├── custom/                     - Custom TMS grids.
  ├── db/                         - Db related tools.
  ├── models/                     - Pydantic models for this application.
- ├── ressources/                 - Application ressources (enums, constants, ...).
+ ├── resources/                  - Application resources (enums, responses, ...).
  ├── templates/                  - Factory and html templates.
- ├── utils/                      - Application tools (dependencies, timer, ...).
+ ├── utils.py                    - Application utility functions.
  ├── app.py                      - FastAPI application creation and configuration.
  ├── setting.py                  - Application configuration.
  └── errors.py                   - Application custom errors.
