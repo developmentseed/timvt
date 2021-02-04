@@ -65,7 +65,8 @@ class VectorTileReader:
                 ) AS geom, {colstring}
                 FROM {self.table.id} t, bounds
                 WHERE ST_Intersects(
-                    ST_Transform(t.geom, 4326), ST_Transform(bounds.geom, 4326)
+                    ST_Transform(t.{geometry_column}, 4326),
+                    ST_Transform(bounds.geom, 4326)
                 ) {limit}
             )
             SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
