@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Optional, Type
 
 from buildpg.asyncpg import BuildPgPool
 from morecantile import TileMatrixSet
+from shapely import wkt
 
 from timvt.db.tiles import VectorTileReader
 from timvt.dependencies import (
@@ -145,10 +146,12 @@ class VectorTilerFactory:
             tile_endpoint = self.url_for(request, "tile", **kwargs).replace("\\", "")
             minzoom = minzoom or tms.minzoom
             maxzoom = maxzoom or tms.maxzoom
+
             return {
                 "minzoom": minzoom,
                 "maxzoom": maxzoom,
                 "name": table.id,
+                "bounds": list(wkt.loads(table.bounds).bounds),
                 "tiles": [tile_endpoint],
             }
 

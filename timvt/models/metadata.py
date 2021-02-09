@@ -15,4 +15,5 @@ class TableMetadata(BaseModel):
     srid: int
     geometry_type: str
     properties: Dict[str, str]
+    bounds: str
     link: Optional[str]

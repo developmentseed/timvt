@@ -25,7 +25,10 @@ sql_query = """
         jsonb_object(
             array_agg(column_name),
             array_agg(udt_name)
-        ) as coldict
+        ) as coldict,
+        ST_AsText(
+            ST_Transform(ST_SetSRID(ST_EstimatedExtent(f_table_schema, f_table_name, f_geometry_column), srid), 4326)
+        ) as bounds_wkt
     FROM
         information_schema.columns,
         geo_tables
@@ -49,7 +52,8 @@ sql_query = """
                 'geometry_column', f_geometry_column,
                 'srid', srid,
                 'geometry_type', type,
-                'properties', coldict
+                'properties', coldict,
+                'bounds', bounds_wkt
             )
         )
     FROM t
