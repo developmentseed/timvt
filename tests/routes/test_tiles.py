@@ -1,6 +1,7 @@
 """Test Tiles endpoints."""
 
 import mapbox_vector_tile
+import numpy as np
 
 
 def test_tilejson(app):
@@ -12,7 +13,10 @@ def test_tilejson(app):
     assert resp_json["name"] == "public.landsat_wrs"
     assert resp_json["minzoom"] == 0
     assert resp_json["maxzoom"] == 24
-    assert resp_json["bounds"] == [-180.0, -82.6401062011719, 180.0, 82.6401062011719]
+
+    np.testing.assert_almost_equal(
+        resp_json["bounds"], [-180.0, -82.6401062011719, 180.0, 82.6401062011719]
+    )
 
 
 def test_tile(app):
