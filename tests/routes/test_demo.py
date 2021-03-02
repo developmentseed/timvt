@@ -6,4 +6,5 @@ def test_indexjson(app):
     response = app.get("/index.json")
     assert response.status_code == 200
     body = response.json()
-    print(len(body))
+    assert len(body) == 1
+    assert body[0]["id"] == "public.landsat_wrs"
