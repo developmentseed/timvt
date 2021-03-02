@@ -1,4 +1,4 @@
-"""Test timvt.app.app."""
+"""Test timvt.main.app."""
 
 
 def test_health(app):

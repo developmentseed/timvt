@@ -22,8 +22,8 @@ app = FastAPI(
     description="A lightweight PostGIS vector tile server.",
     version=timvt_version,
     default_response_class=JSONIndented,
+    debug=settings.DEBUG,
 )
-app.debug = settings.DEBUG
 
 # Setup CORS.
 if settings.CORS_ORIGINS:
@@ -56,7 +56,7 @@ async def shutdown_event():
 
 
 # Register endpoints.
+app.include_router(demo.router, tags=["demo"])
 app.include_router(tiles.router, tags=["Tiles"])
 app.include_router(tms.router, tags=["TileMatrixSets"])
-app.include_router(demo.router, tags=["demo"])
 app.include_router(health.router, tags=["Health Check"])
