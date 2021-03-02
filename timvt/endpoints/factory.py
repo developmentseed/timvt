@@ -18,7 +18,6 @@ from timvt.models.mapbox import TileJSON
 from timvt.models.metadata import TableMetadata
 from timvt.models.OGC import TileMatrixSetList
 from timvt.resources.enums import MimeTypes
-from timvt.utils import Timer
 
 from fastapi import APIRouter, Depends, Path, Query
 
@@ -91,23 +90,9 @@ class VectorTilerFactory:
             columns: str = None,
         ):
             """Return vector tile."""
-            timings = []
-            headers: Dict[str, str] = {}
-
             reader = self.reader(db_pool, table=table, tms=tms)
-            with Timer() as t:
-                content = await reader.tile(x, y, z, columns=columns)
-            timings.append(("db-read", t.elapsed))
-
-            if timings:
-                headers["X-Server-Timings"] = "; ".join(
-                    [
-                        "{} - {:0.2f}".format(name, time * 1000)
-                        for (name, time) in timings
-                    ]
-                )
-
-            return Response(content, media_type=MimeTypes.pbf.value, headers=headers)
+            content = await reader.tile(x, y, z, columns=columns)
+            return Response(content, media_type=MimeTypes.pbf.value)
 
     def tilejson(self):
         """Register tilejson endpoints."""

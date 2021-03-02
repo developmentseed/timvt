@@ -5,7 +5,7 @@ from typing import List
 
 from pydantic import AnyHttpUrl, BaseModel
 
-from ..resources.enums import MimeTypes
+from timvt.resources.enums import MimeTypes
 
 
 class TileMatrixSetLink(BaseModel):
