@@ -6,11 +6,15 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
+    "asyncpg==0.21.0",
     "buildpg",
-    "fastapi[all]",
-    "asyncpg",
+    "fastapi==0.63.0",
+    "jinja2>=2.11.2,<3.0.0",
     "morecantile>=2.1,<2.2",
+    "uvicorn[standard]>=0.12.0,<0.14.0",
     "dataclasses;python_version<'3.7'",
+    "async_exit_stack>=1.0.1,<2.0.0;python_version<'3.7'",
+    "async_generator>=1.10,<2.0.0;python_version<'3.7'",
 ]
 
 test_reqs = [

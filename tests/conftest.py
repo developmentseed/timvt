@@ -33,7 +33,7 @@ def app(database_url, monkeypatch):
     """Create app with connection to the pytest database."""
     monkeypatch.setenv("DATABASE_URL", database_url)
 
-    from timvt.app import app
+    from timvt.main import app
 
     with TestClient(app) as app:
         yield app

@@ -83,7 +83,7 @@ DATABASE_URL=postgresql://username:password@0.0.0.0:5432/postgis
 
 4. Launch
 ```
-$ uvicorn timvt.app:app --reload
+$ uvicorn timvt.main:app --reload
 ```
 
 ### With Docker
@@ -132,7 +132,7 @@ timvt/                           - Python module.
  ├── resources/                  - Application resources (enums, responses, ...).
  ├── templates/                  - Factory and html templates.
  ├── utils.py                    - Application utility functions.
- ├── app.py                      - FastAPI application creation and configuration.
+ ├── main.py                     - FastAPI application creation and configuration.
  ├── setting.py                  - Application configuration.
  └── errors.py                   - Application custom errors.
 ```
