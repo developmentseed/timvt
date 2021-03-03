@@ -130,10 +130,12 @@ class VectorTilerFactory:
             tile_endpoint = self.url_for(request, "tile", **kwargs).replace("\\", "")
             minzoom = minzoom or tms.minzoom
             maxzoom = maxzoom or tms.maxzoom
+
             return {
                 "minzoom": minzoom,
                 "maxzoom": maxzoom,
                 "name": table.id,
+                "bounds": table.bounds,
                 "tiles": [tile_endpoint],
             }
 
