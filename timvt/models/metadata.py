@@ -1,6 +1,6 @@
 """timvt Metadata models."""
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -15,5 +15,5 @@ class TableMetadata(BaseModel):
     srid: int
     geometry_type: str
     properties: Dict[str, str]
-    bounds: str
+    bounds: Tuple[float, float, float, float]
     link: Optional[str]

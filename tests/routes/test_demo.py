@@ -8,3 +8,4 @@ def test_indexjson(app):
     body = response.json()
     assert len(body) == 1
     assert body[0]["id"] == "public.landsat_wrs"
+    assert body[0]["bounds"]
