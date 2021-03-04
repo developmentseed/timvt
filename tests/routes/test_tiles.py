@@ -6,7 +6,7 @@ import numpy as np
 
 def test_tilejson(app):
     """Test TileJSON endpoint."""
-    response = app.get("/landsat_wrs.json")
+    response = app.get("/public.landsat_wrs.json")
     assert response.status_code == 200
 
     resp_json = response.json()
@@ -18,7 +18,7 @@ def test_tilejson(app):
         resp_json["bounds"], [-180.0, -82.6401062011719, 180.0, 82.6401062011719]
     )
 
-    response = app.get("/landsat_wrs.json?minzoom=1&maxzoom=2")
+    response = app.get("/public.landsat_wrs.json?minzoom=1&maxzoom=2")
     assert response.status_code == 200
 
     resp_json = response.json()
@@ -29,7 +29,7 @@ def test_tilejson(app):
 
 def test_tile(app):
     """request a tile."""
-    response = app.get("/tiles/landsat_wrs/0/0/0.pbf")
+    response = app.get("/tiles/public.landsat_wrs/0/0/0.pbf")
     assert response.status_code == 200
 
     decoded = mapbox_vector_tile.decode(response.content)

@@ -45,16 +45,15 @@ def TableParams(
 ) -> TableMetadata:
     """Table."""
     table_pattern = re.match(  # type: ignore
-        r"^((?P<schema>.+)\.)?(?P<table>.+)$", table
+        r"^(?P<schema>.+)\.(?P<table>.+)$", table
     ).groupdict()
 
-    schema = table_pattern["schema"]
-    table_name = table_pattern["table"]
+    assert table_pattern["schema"]
+    assert table_pattern["table"]
 
     for r in request.app.state.Catalog:
-        if r["table"] == table_name:
-            if schema is None or r["schema"] == schema:
-                return TableMetadata(**r)
+        if r["id"] == table:
+            return TableMetadata(**r)
 
     raise HTTPException(status_code=404, detail=f"Table '{table}' not found.")
 
