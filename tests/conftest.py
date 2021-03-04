@@ -32,6 +32,8 @@ def database_url(test_db):
 def app(database_url, monkeypatch):
     """Create app with connection to the pytest database."""
     monkeypatch.setenv("DATABASE_URL", database_url)
+    monkeypatch.setenv("DEFAULT_MINZOOM", 5)
+    monkeypatch.setenv("DEFAULT_MAXZOOM", 12)
 
     from timvt.main import app
 
