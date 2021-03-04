@@ -10,9 +10,11 @@ from starlette.config import Config
 
 config = Config(".env")
 
+# API config
 APP_NAME = config("APP_NAME", cast=str, default="TiMVT")
 ENVIRONMENT = config("ENVIRONMENT", cast=str, default="production")
 DEBUG = config("DEBUG", cast=bool, default=False)
+CORS_ORIGINS = config("CORS_ORIGINS", cast=str, default="*")
 
 # Database config
 DATABASE_URL = config("DATABASE_URL", cast=str, default="")
@@ -36,8 +38,9 @@ DB_MAX_INACTIVE_CONN_LIFETIME = config(
     "DB_MAX_INACTIVE_CONN_LIFETIME", cast=float, default=300.0
 )
 
+# Tile / Table config
 TILE_RESOLUTION = config("TILE_RESOLUTION", cast=int, default=4096)
 TILE_BUFFER = config("TILE_BUFFER", cast=int, default=256)
 MAX_FEATURES_PER_TILE = config("MAX_FEATURES_PER_TILE", cast=int, default=10000)
-
-CORS_ORIGINS = config("CORS_ORIGINS", cast=str, default="*")
+DEFAULT_MINZOOM = config("DEFAULT_MINZOOM", cast=int, default=0)
+DEFAULT_MAXZOOM = config("DEFAULT_MAXZOOM", cast=int, default=22)
