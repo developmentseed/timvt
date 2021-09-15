@@ -6,8 +6,8 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
-    "asyncpg==0.21.0",
-    "buildpg",
+    "asyncpg>=0.23.0",
+    "buildpg>=0.3",
     "fastapi==0.63.0",
     "jinja2>=2.11.2,<3.0.0",
     "morecantile>=2.1,<2.2",
