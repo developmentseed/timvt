@@ -5,6 +5,8 @@ on:
   push:
     branches:
     - master
+    tags:
+    - '*'
   pull_request:
 
 jobs:
@@ -12,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
       - uses: actions/checkout@v2
@@ -23,7 +25,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update --fix-missing
           sudo apt install libpq-dev postgis postgresql-13-postgis-3
           python -m pip install --upgrade pip
           python -m pip install tox codecov pre-commit
@@ -34,7 +35,6 @@ jobs:
 
       # Run pre-commit (only for python-3.8)
       - name: run pre-commit
-        if: matrix.python-version == 3.8
         run: pre-commit run --all-files
 
       - name: Upload Results
