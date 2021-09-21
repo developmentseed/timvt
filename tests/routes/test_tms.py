@@ -6,7 +6,7 @@ def test_tilematrix(app):
     response = app.get("/tileMatrixSets")
     assert response.status_code == 200
     body = response.json()
-    print(body)
+
     assert len(body["tileMatrixSets"]) == 11  # morecantile has 10 defaults
     tms = list(filter(lambda m: m["id"] == "WebMercatorQuad", body["tileMatrixSets"]))[
         0

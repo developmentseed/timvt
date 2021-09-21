@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
 
     steps:
       - uses: actions/checkout@v2
@@ -23,15 +23,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: install lib postgres
+        run: sudo apt-get install --yes libpq-dev postgis postgresql-12-postgis-3
+
       - name: Install dependencies
         run: |
-          sudo apt install libpq-dev postgis postgresql-13-postgis-3
           python -m pip install --upgrade pip
           python -m pip install tox codecov pre-commit
 
       # Run tox using the version of Python in `PATH`
       - name: Run Tox
         run: tox -e py
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASS: password
+          POSTGRES_HOST: localhost
+          POSTGRES_DBNAME: postgres
+          POSTGRES_PORT: 5432
 
       # Run pre-commit (only for python-3.8)
       - name: run pre-commit

@@ -1,9 +1,9 @@
 """TiVTiler app."""
 
-from timvt import __version__ as timvt_version
 from timvt import settings
 from timvt.db import close_db_connection, connect_to_db
 from timvt.factory import TMSFactory, VectorTilerFactory
+from timvt.version import __version__ as timvt_version
 
 from fastapi import FastAPI, Request
 

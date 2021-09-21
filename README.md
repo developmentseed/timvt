@@ -45,7 +45,7 @@ Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) fr
 
 ### Python Requirements
 - [FastAPI](https://fastapi.tiangolo.com): *Modern, fast (high-performance), web framework for building APIs*
-- [Morecantile](https://github.com/developmentseed/morecantile) (Rasterio/GDAL): *Construct and use map tile grids (a.k.a TileMatrixSet / TMS)*
+- [Morecantile](https://github.com/developmentseed/morecantile): *Construct and use map tile grids (a.k.a TileMatrixSet / TMS)*
 - [asyncpg](https://github.com/MagicStack/asyncpg) *A fast PostgreSQL Database Client Library for Python/asyncio*
 
 ### PostGIS/Postgres
@@ -100,42 +100,6 @@ $ docker-compose up --build
 `:endpoint:/docs`
 
 ![](https://user-images.githubusercontent.com/10407788/106812010-2681a180-663d-11eb-8fe9-9ed2de6e0ddd.png)
-
-
-
-## Project structure
-
-```
-demo/                            - Leaflet/Mapbox demo
- │
-Dockerfiles/                     - Dockerfiles.
- ├── app/
- │   └── Dockerfile              - timvt Application dockerfile (python:3.8-slim).
- ├── db/
- │   ├── countries.sql           - Natural Earth test dataset.
- │   └── Dockerfile              - PostGIS dockerfile (postgis/postgis:12-3.0).
- │
-tests/                           - timvt Python Unitest suite.
- │
-timvt/                           - Python module.
- ├── endpoints/                  - Application routes.
- │   ├── demo.py                 - Demo web pages.
- │   ├── factory.py              - Tile endpoints factory.
- │   ├── health.py               - Health check endpoint.
- │   ├── index.py                - Table metadata and list.
- │   ├── tiles.py                - Tile related endpoints.
- │   └── tms.py                  - TileMatrixSet list and metadata.
- │
- ├── custom/                     - Custom TMS grids.
- ├── db/                         - Db related tools.
- ├── models/                     - Pydantic models for this application.
- ├── resources/                  - Application resources (enums, responses, ...).
- ├── templates/                  - Factory and html templates.
- ├── utils.py                    - Application utility functions.
- ├── main.py                     - FastAPI application creation and configuration.
- ├── setting.py                  - Application configuration.
- └── errors.py                   - Application custom errors.
-```
 
 
 ## Contribution & Development
