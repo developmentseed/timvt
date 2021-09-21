@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Type
+from urllib.parse import urlencode
 
 from morecantile import TileMatrixSet
 
@@ -21,6 +22,7 @@ from fastapi import APIRouter, Depends, Query
 
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, Response
+from starlette.routing import NoMatchFound
 from starlette.templating import Jinja2Templates
 
 try:
@@ -87,32 +89,48 @@ class VectorTilerFactory:
             tile: TileParams = Depends(),
             tms: TileMatrixSet = Depends(self.tms_dependency),
             table: TableMetadata = Depends(self.table_dependency),
-            columns: Optional[str] = Query(None, description="Column name"),
+            columns: Optional[str] = Query(
+                None,
+                description="Comma-seprated list of properties (column's name) to include in the tile",
+            ),
+            limit: Optional[int] = Query(
+                None,
+                description=f"Number of features to write to a tile. Defaults to {MAX_FEATURES_PER_TILE}.",
+            ),
+            resolution: Optional[int] = Query(
+                None, description=f"Tile's resolution. Defaults to {TILE_RESOLUTION}.",
+            ),
+            buffer: Optional[int] = Query(
+                None,
+                description=f"Size of extra data to add for a tile. Defaults to {TILE_BUFFER}.",
+            ),
         ):
             """Return vector tile."""
             pool = request.app.state.pool
 
+            limit = limit if limit is not None else MAX_FEATURES_PER_TILE
+            limitstr = f"LIMIT {limit}" if limit > -1 else ""
+
+            resolution = resolution if resolution is not None else TILE_RESOLUTION
+            buffer = buffer if buffer is not None else TILE_BUFFER
+
+            # create list of columns to return
+            geometry_column = table.geometry_column
+            cols = table.properties
+            if geometry_column in cols:
+                del cols[geometry_column]
+            if columns is not None:
+                include_cols = [c.strip() for c in columns.split(",")]
+                for c in cols.copy():
+                    if c not in include_cols:
+                        del cols[c]
+            colstring = ", ".join(list(cols))
+
+            bbox = tms.xy_bounds(tile)
+            epsg = tms.crs.to_epsg()
+            segSize = bbox.right - bbox.left
+
             async with pool.acquire() as conn:
-                geometry_column = table.geometry_column
-                cols = table.properties
-                if geometry_column in cols:
-                    del cols[geometry_column]
-
-                if columns is not None:
-                    include_cols = [c.strip() for c in columns.split(",")]
-                    for c in cols.copy():
-                        if c not in include_cols:
-                            del cols[c]
-
-                colstring = ", ".join(list(cols))
-
-                limitval = str(int(MAX_FEATURES_PER_TILE))
-                limit = f"LIMIT {limitval}" if MAX_FEATURES_PER_TILE > -1 else ""
-
-                bbox = tms.xy_bounds(tile)
-                epsg = tms.crs.to_epsg()
-                segSize = bbox.right - bbox.left
-
                 sql_query = f"""
                     WITH
                     bounds AS (
@@ -139,7 +157,7 @@ class VectorTilerFactory:
                         WHERE ST_Intersects(
                             ST_Transform(t.{geometry_column}, 4326),
                             ST_Transform(bounds.geom, 4326)
-                        ) {limit}
+                        ) {limitstr}
                     )
                     SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
                 """
@@ -152,8 +170,8 @@ class VectorTilerFactory:
                     ymax=bbox.top,
                     epsg=epsg,
                     seg_size=segSize,
-                    tile_resolution=TILE_RESOLUTION,
-                    tile_buffer=TILE_BUFFER,
+                    tile_resolution=resolution,
+                    tile_buffer=buffer,
                 )
 
             return Response(bytes(content), media_type=MimeTypes.pbf.value)
@@ -183,9 +201,24 @@ class VectorTilerFactory:
             maxzoom: Optional[int] = Query(
                 None, description="Overwrite default maxzoom."
             ),
+            columns: Optional[str] = Query(
+                None,
+                description="Comma-seprated list of properties (column's name) to include in the tile",
+            ),
+            limit: Optional[int] = Query(
+                None,
+                description=f"Number of features to write to a tile. Defaults to {MAX_FEATURES_PER_TILE}.",
+            ),
+            resolution: Optional[int] = Query(
+                None, description=f"Tile's resolution. Defaults to {TILE_RESOLUTION}.",
+            ),
+            buffer: Optional[int] = Query(
+                None,
+                description=f"Size of extra data to add for a tile. Defaults to {TILE_BUFFER}.",
+            ),
         ):
             """Return TileJSON document."""
-            kwargs = {
+            kwargs: Dict[str, Any] = {
                 "TileMatrixSetId": tms.identifier,
                 "table": table.id,
                 "z": "{z}",
@@ -193,6 +226,21 @@ class VectorTilerFactory:
                 "y": "{y}",
             }
             tile_endpoint = self.url_for(request, "tile", **kwargs).replace("\\", "")
+
+            qs = [
+                (key, value)
+                for (key, value) in [
+                    ("columns", columns),
+                    ("limit", limit),
+                    ("resolution", resolution),
+                    ("buffer", buffer),
+                ]
+                if value is not None
+            ]
+
+            if qs:
+                tile_endpoint += f"?{urlencode(qs)}"
+
             minzoom = minzoom if minzoom is not None else (table.minzoom or tms.minzoom)
             maxzoom = maxzoom if maxzoom is not None else (table.maxzoom or tms.maxzoom)
 
@@ -207,10 +255,30 @@ class VectorTilerFactory:
     def metadata(self):
         """Register metadata endpoints."""
 
-        @self.router.get("/index.json", response_model=List[TableMetadata])
+        @self.router.get(
+            "/index.json",
+            response_model=List[TableMetadata],
+            response_model_exclude_none=True,
+        )
         async def index_json(request: Request):
             """Index of tables."""
-            return [TableMetadata(**r) for r in request.app.state.table_catalog]
+
+            def _get_tiles_url(id) -> str:
+                kwargs = {
+                    "table": id,
+                    "z": "{z}",
+                    "x": "{x}",
+                    "y": "{y}",
+                }
+                try:
+                    return self.url_for(request, "tile", **kwargs)
+                except NoMatchFound:
+                    return None
+
+            return [
+                TableMetadata(**r, tileurl=_get_tiles_url(r["id"]))
+                for r in request.app.state.table_catalog
+            ]
 
         @self.router.get(
             "/{table}.json",
@@ -218,8 +286,24 @@ class VectorTilerFactory:
             responses={200: {"description": "Return table metadata"}},
             response_model_exclude_none=True,
         )
-        async def metadata(table: TableMetadata = Depends(self.table_dependency)):
+        async def metadata(
+            request: Request, table: TableMetadata = Depends(self.table_dependency)
+        ):
             """Return table metadata."""
+
+            def _get_tiles_url(id) -> str:
+                kwargs = {
+                    "table": id,
+                    "z": "{z}",
+                    "x": "{x}",
+                    "y": "{y}",
+                }
+                try:
+                    return self.url_for(request, "tile", **kwargs)
+                except NoMatchFound:
+                    return None
+
+            table.tileurl = _get_tiles_url(table.id)
             return table
 
     def viewer(self):
