@@ -12,7 +12,6 @@ config = Config(".env")
 
 # API config
 APP_NAME = config("APP_NAME", cast=str, default="TiMVT")
-ENVIRONMENT = config("ENVIRONMENT", cast=str, default="production")
 DEBUG = config("DEBUG", cast=bool, default=False)
 CORS_ORIGINS = config("CORS_ORIGINS", cast=str, default="*")
 
@@ -31,7 +30,7 @@ if not DATABASE_URL:
         f"{POSTGRES_PORT}/{POSTGRES_DBNAME}"
     )
 
-DB_MIN_CONN_SIZE = config("DB_MIN_CONN_SIZE", cast=int, default=10)
+DB_MIN_CONN_SIZE = config("DB_MIN_CONN_SIZE", cast=int, default=1)
 DB_MAX_CONN_SIZE = config("DB_MAX_CONN_SIZE", cast=int, default=10)
 DB_MAX_QUERIES = config("DB_MAX_QUERIES", cast=int, default=50000)
 DB_MAX_INACTIVE_CONN_LIFETIME = config(

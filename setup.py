@@ -6,15 +6,16 @@ with open("README.md") as f:
     long_description = f.read()
 
 inst_reqs = [
-    "asyncpg==0.21.0",
-    "buildpg",
-    "fastapi==0.63.0",
+    "asyncpg>=0.23.0",
+    "buildpg>=0.3",
+    "fastapi>=0.65,<0.68",
     "jinja2>=2.11.2,<3.0.0",
-    "morecantile>=2.1,<2.2",
-    "uvicorn[standard]>=0.12.0,<0.14.0",
+    "morecantile>=3.0.0a1,<3.1",
+    "starlette-cramjam>=0.1.0,<0.2",
     "dataclasses;python_version<'3.7'",
     "async_exit_stack>=1.0.1,<2.0.0;python_version<'3.7'",
     "async_generator>=1.10,<2.0.0;python_version<'3.7'",
+    "importlib_resources>=1.1.0;python_version<'3.9'",
 ]
 
 test_reqs = [
@@ -25,29 +26,30 @@ test_reqs = [
     "psycopg2",
     "pytest-pgsql",
     "mapbox-vector-tile",
+    "numpy",
 ]
 
 extra_reqs = {
     "test": test_reqs,
     "dev": test_reqs + ["pre-commit"],
+    "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
     "docs": ["nbconvert", "mkdocs", "mkdocs-material", "mkdocs-jupyter", "pygments"],
 }
 
 
 setup(
     name="timvt",
-    version="0.0.1",
     description=u"",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     classifiers=[
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     keywords="FastAPI MVT POSTGIS",
     author=u"Vincent Sarago",

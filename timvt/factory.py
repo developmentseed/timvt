@@ -1,27 +1,37 @@
 """timvt.endpoints.factory: router factories."""
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 
-from buildpg.asyncpg import BuildPgPool
 from morecantile import TileMatrixSet
 
-from timvt.db.tiles import VectorTileReader
 from timvt.dependencies import (
     TableParams,
     TileMatrixSetNames,
     TileMatrixSetParams,
-    _get_db_pool,
+    TileParams,
 )
 from timvt.models.mapbox import TileJSON
 from timvt.models.metadata import TableMetadata
 from timvt.models.OGC import TileMatrixSetList
 from timvt.resources.enums import MimeTypes
+from timvt.settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Query
 
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import HTMLResponse, Response
+from starlette.templating import Jinja2Templates
+
+try:
+    from importlib.resources import files as resources_files  # type: ignore
+except ImportError:
+    # Try backported to PY<39 `importlib_resources`.
+    from importlib_resources import files as resources_files  # type: ignore
+
+
+templates = Jinja2Templates(directory=str(resources_files(__package__) / "templates"))  # type: ignore
+
 
 TILE_RESPONSE_PARAMS: Dict[str, Any] = {
     "responses": {200: {"content": {"application/x-protobuf": {}}}},
@@ -29,12 +39,9 @@ TILE_RESPONSE_PARAMS: Dict[str, Any] = {
 }
 
 
-# ref: https://github.com/python/mypy/issues/5374
-@dataclass  # type: ignore
+@dataclass
 class VectorTilerFactory:
     """VectorTiler Factory."""
-
-    reader: Type[VectorTileReader] = field(default=VectorTileReader)
 
     # FastAPI router
     router: APIRouter = field(default_factory=APIRouter)
@@ -45,9 +52,6 @@ class VectorTilerFactory:
     # Table dependency
     table_dependency: Callable[..., TableMetadata] = TableParams
 
-    # Database pool dependency
-    db_pool_dependency: Callable[..., BuildPgPool] = _get_db_pool
-
     # Router Prefix is needed to find the path for routes when prefixed
     # e.g if you mount the route with `/foo` prefix, set router_prefix to foo
     router_prefix: str = ""
@@ -57,9 +61,11 @@ class VectorTilerFactory:
         self.register_routes()
 
     def register_routes(self):
-        """Register Tiler Routes."""
+        """Register Routes."""
         self.tile()
         self.tilejson()
+        self.metadata()
+        self.viewer()
 
     def url_for(self, request: Request, name: str, **path_params: Any) -> str:
         """Return full url (with prefix) for a specific endpoint."""
@@ -69,9 +75,6 @@ class VectorTilerFactory:
             base_url += self.router_prefix.lstrip("/")
         return url_path.make_absolute_url(base_url=base_url)
 
-    ############################################################################
-    # /tiles
-    ############################################################################
     def tile(self):
         """Register /tiles endpoints."""
 
@@ -80,30 +83,92 @@ class VectorTilerFactory:
             "/tiles/{TileMatrixSetId}/{table}/{z}/{x}/{y}.pbf", **TILE_RESPONSE_PARAMS
         )
         async def tile(
-            z: int = Path(..., ge=0, le=30, description="Mercator tiles's zoom level"),
-            x: int = Path(..., description="Mercator tiles's column"),
-            y: int = Path(..., description="Mercator tiles's row"),
+            request: Request,
+            tile: TileParams = Depends(),
             tms: TileMatrixSet = Depends(self.tms_dependency),
-            table: TableParams = Depends(self.table_dependency),
-            db_pool: BuildPgPool = Depends(self.db_pool_dependency),
-            columns: str = None,
+            table: TableMetadata = Depends(self.table_dependency),
+            columns: Optional[str] = Query(None, description="Column name"),
         ):
             """Return vector tile."""
-            reader = self.reader(db_pool, table=table, tms=tms)
-            content = await reader.tile(x, y, z, columns=columns)
-            return Response(content, media_type=MimeTypes.pbf.value)
+            pool = request.app.state.pool
+
+            async with pool.acquire() as conn:
+                geometry_column = table.geometry_column
+                cols = table.properties
+                if geometry_column in cols:
+                    del cols[geometry_column]
+
+                if columns is not None:
+                    include_cols = [c.strip() for c in columns.split(",")]
+                    for c in cols.copy():
+                        if c not in include_cols:
+                            del cols[c]
+
+                colstring = ", ".join(list(cols))
+
+                limitval = str(int(MAX_FEATURES_PER_TILE))
+                limit = f"LIMIT {limitval}" if MAX_FEATURES_PER_TILE > -1 else ""
+
+                bbox = tms.xy_bounds(tile)
+                epsg = tms.crs.to_epsg()
+                segSize = bbox.right - bbox.left
+
+                sql_query = f"""
+                    WITH
+                    bounds AS (
+                        SELECT
+                            ST_Segmentize(
+                                ST_MakeEnvelope(
+                                    :xmin,
+                                    :ymin,
+                                    :xmax,
+                                    :ymax,
+                                    :epsg
+                                ),
+                                :seg_size
+                            ) AS geom
+                    ),
+                    mvtgeom AS (
+                        SELECT ST_AsMVTGeom(
+                            ST_Transform(t.{geometry_column}, :epsg),
+                            bounds.geom,
+                            :tile_resolution,
+                            :tile_buffer
+                        ) AS geom, {colstring}
+                        FROM {table.id} t, bounds
+                        WHERE ST_Intersects(
+                            ST_Transform(t.{geometry_column}, 4326),
+                            ST_Transform(bounds.geom, 4326)
+                        ) {limit}
+                    )
+                    SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
+                """
+
+                content = await conn.fetchval_b(
+                    sql_query,
+                    xmin=bbox.left,
+                    ymin=bbox.bottom,
+                    xmax=bbox.right,
+                    ymax=bbox.top,
+                    epsg=epsg,
+                    seg_size=segSize,
+                    tile_resolution=TILE_RESOLUTION,
+                    tile_buffer=TILE_BUFFER,
+                )
+
+            return Response(bytes(content), media_type=MimeTypes.pbf.value)
 
     def tilejson(self):
         """Register tilejson endpoints."""
 
         @self.router.get(
-            "/{table}.json",
+            "/{table}/tilejson.json",
             response_model=TileJSON,
             responses={200: {"description": "Return a tilejson"}},
             response_model_exclude_none=True,
         )
         @self.router.get(
-            "/{TileMatrixSetId}/{table}.json",
+            "/{TileMatrixSetId}/{table}/tilejson.json",
             response_model=TileJSON,
             responses={200: {"description": "Return a tilejson"}},
             response_model_exclude_none=True,
@@ -138,6 +203,40 @@ class VectorTilerFactory:
                 "bounds": table.bounds,
                 "tiles": [tile_endpoint],
             }
+
+    def metadata(self):
+        """Register metadata endpoints."""
+
+        @self.router.get("/index.json", response_model=List[TableMetadata])
+        async def index_json(request: Request):
+            """Index of tables."""
+            return [TableMetadata(**r) for r in request.app.state.table_catalog]
+
+        @self.router.get(
+            "/{table}.json",
+            response_model=TableMetadata,
+            responses={200: {"description": "Return table metadata"}},
+            response_model_exclude_none=True,
+        )
+        async def metadata(table: TableMetadata = Depends(self.table_dependency)):
+            """Return table metadata."""
+            return table
+
+    def viewer(self):
+        """Register viewer."""
+
+        @self.router.get("/viewer/{table}", response_class=HTMLResponse)
+        async def demo(
+            request: Request, table: TableMetadata = Depends(TableParams),
+        ):
+            """Demo for each table."""
+            tile_url = request.url_for("tilejson", table=table.id).replace("\\", "")
+
+            return templates.TemplateResponse(
+                name="viewer.html",
+                context={"endpoint": tile_url, "request": request},
+                media_type="text/html",
+            )
 
 
 @dataclass

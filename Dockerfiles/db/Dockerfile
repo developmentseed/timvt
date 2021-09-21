@@ -1,3 +1,3 @@
-FROM postgis/postgis:12-3.0
+FROM postgis/postgis:13-3.1
 
 COPY *.sql /docker-entrypoint-initdb.d/

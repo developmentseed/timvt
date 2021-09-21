@@ -32,11 +32,6 @@
 <body>
   <div id='map'></div>
   <script>
-
-    const endpoint = '{{ endpoint }}'
-
-    var scope = { metadata: {}, config: {} }
-
     var map = new mapboxgl.Map({
       container: 'map',
       style: { version: 8, sources: {}, layers: [] },
@@ -47,7 +42,7 @@
     map.on('load', () => {
       map.addSource('table', {
         type: 'vector',
-        url: endpoint,
+        url: '{{ endpoint }}',
       })
       map.addLayer({
         id: 'table',

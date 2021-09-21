@@ -2,7 +2,7 @@ version: '3'
 
 services:
   app:
-    container_name: timvt
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfiles/app/Dockerfile
@@ -11,11 +11,10 @@ services:
       - PORT=8081
       - RELOAD=true
       - PYTHONWARNINGS=ignore
-      - ENVIRONMENT=local
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_HOST=database
       - POSTGRES_PORT=5432
       - DEBUG=TRUE
     ports:
@@ -24,13 +23,14 @@ services:
       - database
 
   database:
+    platform: linux/amd64
     build:
       context: ./Dockerfiles/db
       dockerfile: Dockerfile
-    container_name: postgres
-    ports:
-      - "5432:5432"
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=postgis
+    ports:
+      - "5439:5432"
+    command: postgres -N 500

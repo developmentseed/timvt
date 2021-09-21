@@ -1,1 +1,0 @@
-"""timvt.endpoints."""

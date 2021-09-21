@@ -3,31 +3,17 @@
 import re
 from enum import Enum
 
-from buildpg import asyncpg
 from morecantile import Tile, TileMatrixSet, tms
 
-from timvt.custom import tms as custom_tms
 from timvt.models.metadata import TableMetadata
 
 from fastapi import HTTPException, Path, Query
 
 from starlette.requests import Request
 
-# Register Custom TMS
-tms = tms.register([custom_tms.EPSG3413, custom_tms.EPSG6933])
-
 TileMatrixSetNames = Enum(  # type: ignore
     "TileMatrixSetNames", [(a, a) for a in sorted(tms.list())]
 )
-
-
-def TileParams(
-    z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
-    x: int = Path(..., description="Tiles's column"),
-    y: int = Path(..., description="Tiles's row"),
-) -> Tile:
-    """Tile parameters."""
-    return Tile(x, y, z)
 
 
 def TileMatrixSetParams(
@@ -38,6 +24,15 @@ def TileMatrixSetParams(
 ) -> TileMatrixSet:
     """TileMatrixSet parameters."""
     return tms.get(TileMatrixSetId.name)
+
+
+def TileParams(
+    z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
+    x: int = Path(..., description="Tiles's column"),
+    y: int = Path(..., description="Tiles's row"),
+) -> Tile:
+    """Tile parameters."""
+    return Tile(x, y, z)
 
 
 def TableParams(
@@ -51,12 +46,8 @@ def TableParams(
     assert table_pattern["schema"]
     assert table_pattern["table"]
 
-    for r in request.app.state.Catalog:
+    for r in request.app.state.table_catalog:
         if r["id"] == table:
             return TableMetadata(**r)
 
     raise HTTPException(status_code=404, detail=f"Table '{table}' not found.")
-
-
-def _get_db_pool(request: Request) -> asyncpg.BuildPgPool:
-    return request.app.state.pool

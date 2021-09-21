@@ -1,27 +1,31 @@
 """TiVTiler app."""
 
-import logging
-
-from timvt import __version__ as timvt_version
 from timvt import settings
-from timvt.db.catalog import table_index
-from timvt.db.events import close_db_connection, connect_to_db
-from timvt.endpoints import demo, health, tiles, tms
-from timvt.resources.responses import JSONIndented
+from timvt.db import close_db_connection, connect_to_db
+from timvt.factory import TMSFactory, VectorTilerFactory
+from timvt.version import __version__ as timvt_version
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.gzip import GZipMiddleware
+from starlette.responses import HTMLResponse
+from starlette.templating import Jinja2Templates
+from starlette_cramjam.middleware import CompressionMiddleware
 
-logger = logging.getLogger(__name__)
+try:
+    from importlib.resources import files as resources_files  # type: ignore
+except ImportError:
+    from importlib_resources import files as resources_files  # type: ignore
+
+
+templates = Jinja2Templates(directory=str(resources_files(__package__) / "templates"))  # type: ignore
+
 
 # Create TiVTiler Application.
 app = FastAPI(
     title=settings.APP_NAME,
     description="A lightweight PostGIS vector tile server.",
     version=timvt_version,
-    default_response_class=JSONIndented,
     debug=settings.DEBUG,
 )
 
@@ -36,8 +40,7 @@ if settings.CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-# Add GZIP compression by default.
-app.add_middleware(GZipMiddleware, minimum_size=0)
+app.add_middleware(CompressionMiddleware, minimum_size=0)
 
 
 # Register Start/Stop application event handler to setup/stop the database connection
@@ -45,8 +48,6 @@ app.add_middleware(GZipMiddleware, minimum_size=0)
 async def startup_event():
     """Application startup: register the database connection and create table list."""
     await connect_to_db(app)
-    # Fetch database table list
-    app.state.Catalog = await table_index(app.state.pool)
 
 
 @app.on_event("shutdown")
@@ -56,7 +57,24 @@ async def shutdown_event():
 
 
 # Register endpoints.
-app.include_router(demo.router, tags=["demo"])
-app.include_router(tiles.router, tags=["Tiles"])
+mvt_tiler = VectorTilerFactory()
+app.include_router(mvt_tiler.router, tags=["Tiles"])
+
+tms = TMSFactory()
 app.include_router(tms.router, tags=["TileMatrixSets"])
-app.include_router(health.router, tags=["Health Check"])
+
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def index(request: Request):
+    """Index of tables."""
+    return templates.TemplateResponse(
+        name="index.html",
+        context={"index": request.app.state.table_catalog, "request": request},
+        media_type="text/html",
+    )
+
+
+@app.get("/healthz", description="Health Check", tags=["Health Check"])
+def ping():
+    """Health check."""
+    return {"ping": "pong!"}
