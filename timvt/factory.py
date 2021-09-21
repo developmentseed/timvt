@@ -65,7 +65,6 @@ class VectorTilerFactory:
     def register_routes(self):
         """Register Routes."""
         self.tile()
-        self.tilejson()
         self.metadata()
         self.viewer()
 
@@ -176,81 +175,85 @@ class VectorTilerFactory:
 
             return Response(bytes(content), media_type=MimeTypes.pbf.value)
 
-    def tilejson(self):
-        """Register tilejson endpoints."""
+            @self.router.get(
+                "/{table}/tilejson.json",
+                response_model=TileJSON,
+                responses={200: {"description": "Return a tilejson"}},
+                response_model_exclude_none=True,
+            )
+            @self.router.get(
+                "/{TileMatrixSetId}/{table}/tilejson.json",
+                response_model=TileJSON,
+                responses={200: {"description": "Return a tilejson"}},
+                response_model_exclude_none=True,
+            )
+            async def tilejson(
+                request: Request,
+                table: TableMetadata = Depends(self.table_dependency),
+                tms: TileMatrixSet = Depends(self.tms_dependency),
+                minzoom: Optional[int] = Query(
+                    None, description="Overwrite default minzoom."
+                ),
+                maxzoom: Optional[int] = Query(
+                    None, description="Overwrite default maxzoom."
+                ),
+                columns: Optional[str] = Query(
+                    None,
+                    description="Comma-seprated list of properties (column's name) to include in the tile",
+                ),
+                limit: Optional[int] = Query(
+                    None,
+                    description=f"Number of features to write to a tile. Defaults to {MAX_FEATURES_PER_TILE}.",
+                ),
+                resolution: Optional[int] = Query(
+                    None,
+                    description=f"Tile's resolution. Defaults to {TILE_RESOLUTION}.",
+                ),
+                buffer: Optional[int] = Query(
+                    None,
+                    description=f"Size of extra data to add for a tile. Defaults to {TILE_BUFFER}.",
+                ),
+            ):
+                """Return TileJSON document."""
+                kwargs: Dict[str, Any] = {
+                    "TileMatrixSetId": tms.identifier,
+                    "table": table.id,
+                    "z": "{z}",
+                    "x": "{x}",
+                    "y": "{y}",
+                }
+                tile_endpoint = self.url_for(request, "tile", **kwargs).replace(
+                    "\\", ""
+                )
 
-        @self.router.get(
-            "/{table}/tilejson.json",
-            response_model=TileJSON,
-            responses={200: {"description": "Return a tilejson"}},
-            response_model_exclude_none=True,
-        )
-        @self.router.get(
-            "/{TileMatrixSetId}/{table}/tilejson.json",
-            response_model=TileJSON,
-            responses={200: {"description": "Return a tilejson"}},
-            response_model_exclude_none=True,
-        )
-        async def tilejson(
-            request: Request,
-            table: TableMetadata = Depends(self.table_dependency),
-            tms: TileMatrixSet = Depends(self.tms_dependency),
-            minzoom: Optional[int] = Query(
-                None, description="Overwrite default minzoom."
-            ),
-            maxzoom: Optional[int] = Query(
-                None, description="Overwrite default maxzoom."
-            ),
-            columns: Optional[str] = Query(
-                None,
-                description="Comma-seprated list of properties (column's name) to include in the tile",
-            ),
-            limit: Optional[int] = Query(
-                None,
-                description=f"Number of features to write to a tile. Defaults to {MAX_FEATURES_PER_TILE}.",
-            ),
-            resolution: Optional[int] = Query(
-                None, description=f"Tile's resolution. Defaults to {TILE_RESOLUTION}.",
-            ),
-            buffer: Optional[int] = Query(
-                None,
-                description=f"Size of extra data to add for a tile. Defaults to {TILE_BUFFER}.",
-            ),
-        ):
-            """Return TileJSON document."""
-            kwargs: Dict[str, Any] = {
-                "TileMatrixSetId": tms.identifier,
-                "table": table.id,
-                "z": "{z}",
-                "x": "{x}",
-                "y": "{y}",
-            }
-            tile_endpoint = self.url_for(request, "tile", **kwargs).replace("\\", "")
-
-            qs = [
-                (key, value)
-                for (key, value) in [
-                    ("columns", columns),
-                    ("limit", limit),
-                    ("resolution", resolution),
-                    ("buffer", buffer),
+                qs = [
+                    (key, value)
+                    for (key, value) in [
+                        ("columns", columns),
+                        ("limit", limit),
+                        ("resolution", resolution),
+                        ("buffer", buffer),
+                    ]
+                    if value is not None
                 ]
-                if value is not None
-            ]
 
-            if qs:
-                tile_endpoint += f"?{urlencode(qs)}"
+                if qs:
+                    tile_endpoint += f"?{urlencode(qs)}"
 
-            minzoom = minzoom if minzoom is not None else (table.minzoom or tms.minzoom)
-            maxzoom = maxzoom if maxzoom is not None else (table.maxzoom or tms.maxzoom)
+                minzoom = (
+                    minzoom if minzoom is not None else (table.minzoom or tms.minzoom)
+                )
+                maxzoom = (
+                    maxzoom if maxzoom is not None else (table.maxzoom or tms.maxzoom)
+                )
 
-            return {
-                "minzoom": minzoom,
-                "maxzoom": maxzoom,
-                "name": table.id,
-                "bounds": table.bounds,
-                "tiles": [tile_endpoint],
-            }
+                return {
+                    "minzoom": minzoom,
+                    "maxzoom": maxzoom,
+                    "name": table.id,
+                    "bounds": table.bounds,
+                    "tiles": [tile_endpoint],
+                }
 
     def metadata(self):
         """Register metadata endpoints."""
