@@ -1,4 +1,6 @@
-FROM tiangolo/uvicorn-gunicorn:python3.8
+FROM ghcr.io/vincentsarago/uvicorn-gunicorn:3.8
+
+WORKDIR /tmp
 
 COPY README.md README.md
 COPY timvt/ timvt/

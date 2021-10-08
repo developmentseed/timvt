@@ -3,6 +3,8 @@
 from timvt import settings
 from timvt.db import close_db_connection, connect_to_db
 from timvt.factory import TMSFactory, VectorTilerFactory
+from timvt.functions import registry as FunctionRegistry
+from timvt.layer import Function
 from timvt.version import __version__ as timvt_version
 
 from fastapi import FastAPI, Request
@@ -56,8 +58,14 @@ async def shutdown_event():
     await close_db_connection(app)
 
 
+FunctionRegistry.register(
+    Function.from_file(
+        "squares", str(resources_files(__package__) / "sql" / "squares.sql"),
+    )
+)
+
 # Register endpoints.
-mvt_tiler = VectorTilerFactory()
+mvt_tiler = VectorTilerFactory(with_metadata=True, with_viewer=True)
 app.include_router(mvt_tiler.router, tags=["Tiles"])
 
 tms = TMSFactory()
@@ -66,7 +74,7 @@ app.include_router(tms.router, tags=["TileMatrixSets"])
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def index(request: Request):
-    """Index of tables."""
+    """DEMO."""
     return templates.TemplateResponse(
         name="index.html",
         context={"index": request.app.state.table_catalog, "request": request},

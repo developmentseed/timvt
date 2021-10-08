@@ -2,7 +2,6 @@ version: '3'
 
 services:
   app:
-    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfiles/app/Dockerfile
@@ -20,10 +19,13 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - database
+    - database
+    command:
+      bash -c "bash /tmp/scripts/wait-for-it.sh database:5432 && uvicorn timvt.main:app --port 8081 --host 0.0.0.0"
+    volumes:
+      - ./scripts:/tmp/scripts
 
   database:
-    platform: linux/amd64
     build:
       context: ./Dockerfiles/db
       dockerfile: Dockerfile

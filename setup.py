@@ -57,7 +57,7 @@ setup(
     url="https://github.com/developmentseed/timvt",
     license="MIT",
     packages=find_packages(exclude=["tests*"]),
-    package_data={"timvt": ["templates/*.html"]},
+    package_data={"timvt": ["templates/*.html", "sql/*.sql"]},
     include_package_data=True,
     zip_safe=False,
     install_requires=inst_reqs,
