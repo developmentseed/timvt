@@ -40,7 +40,7 @@ jobs:
       - name: Run Tox
         run: tox -e py
 
-      # Run pre-commit (only for python-3.8)
+      # Run pre-commit
       - name: run pre-commit
         run: pre-commit run --all-files
 
@@ -53,108 +53,84 @@ jobs:
           name: ${{ matrix.platform }}-${{ matrix.tox-env }}
           fail_ci_if_error: false
 
-  # publish:
-  #   needs: [tests]
-  #   runs-on: ubuntu-latest
-  #   if: contains(github.ref, 'tags') && github.event_name == 'push'
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v1
-  #       with:
-  #         python-version: "3.x"
+  publish:
+    needs: [tests]
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'tags') && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
 
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         python -m pip install tox
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox
 
-  #     - name: Set tag version
-  #       id: tag
-  #       # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
-  #       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Set tag version
+        id: tag
+        # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
-  #     - name: Set module version
-  #       id: module
-  #       # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
-  #       run: echo ::set-output name=version::$(python setup.py --version)
+      - name: Set module version
+        id: module
+        # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
+        run: echo ::set-output name=version::$(python setup.py --version)
 
-  #     - name: Build and publish
-  #       if: steps.tag.outputs.tag == steps.module.outputs.version
-  #       env:
-  #         TOXENV: release
-  #         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-  #         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-  #       run: tox
+      - name: Build and publish
+        if: steps.tag.outputs.tag == steps.module.outputs.version
+        env:
+          TOXENV: release
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: tox
 
-  # publish-docker:
-  #   needs: [tests]
-  #   if: github.ref == 'refs/heads/master' || contains(github.ref, 'tags')
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
+  publish-docker:
+    needs: [tests]
+    if: github.ref == 'refs/heads/master' || startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  #     - name: Set up QEMU
-  #       uses: docker/setup-qemu-action@v1
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
 
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-  #     - name: Login to DockerHub
-  #       uses: docker/login-action@v1
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #         password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Github
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       id: aws_creds
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: us-east-1
+      - name: Set tag version
+        id: tag
+        # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
-  #     # ref https://github.com/developmentseed/titiler/issues/45#issuecomment-742778808
-  #     - name: Get ECR password
-  #       id: ecr_login
-  #       run: |
-  #         ECR_PASSWORD="$(docker run -i --rm -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_REGION amazon/aws-cli ecr-public get-login-password)"
-  #         echo "::add-mask::$ECR_PASSWORD"
-  #         echo "::set-output name=ecr-login-password::$ECR_PASSWORD"
+      # Push `latest` when commiting to master
+      - name: Build and push
+        if: github.ref == 'refs/heads/master'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
 
-  #     - name: Login to ECR public
-  #       uses: docker/login-action@v1
-  #       with:
-  #         username: AWS
-  #         password: ${{ steps.ecr_login.outputs.ecr-login-password }}
-  #         registry: public.ecr.aws
-
-  #     - name: Set tag version
-  #       id: tag
-  #       # https://stackoverflow.com/questions/58177786/get-the-current-pushed-tag-in-github-actions
-  #       run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-
-  #     # Push `latest` when commiting to master
-  #     - name: Build and push
-  #       if: github.ref == 'refs/heads/master'
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         context: .
-  #         file: Dockerfiles/Dockerfile
-  #         push: true
-  #         tags: |
-  #           developmentseed/titiler:latest
-  #           public.ecr.aws/${{ secrets.AWS_ECR_PUBLIC_REPO }}/titiler:latest
-
-  #     # Push `{VERSION}` when pushing a new tag
-  #     - name: Build and push
-  #       if: contains(github.ref, 'tags')
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         context: .
-  #         file: Dockerfiles/Dockerfile
-  #         push: true
-  #         tags: |
-  #           developmentseed/titiler:${{ steps.module.outputs.version }}
-  #           public.ecr.aws/${{ secrets.AWS_ECR_PUBLIC_REPO }}/titiler:${{ steps.module.outputs.version }}
+      # Push `{VERSION}` when pushing a new tag
+      - name: Build and push
+        if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.tag }}

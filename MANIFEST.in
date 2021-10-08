@@ -1,2 +1,1 @@
 include timvt/templates/*.html
-include timvt/sql/*.sql

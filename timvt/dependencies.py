@@ -39,11 +39,10 @@ def TileParams(
 def LayerParams(
     request: Request, layer: str = Path(..., description="Layer Name"),
 ) -> Layer:
-    """Layer: Function or Table."""
+    """Return Layer Object."""
     func = FunctionRegistry.get(layer)
     if func:
         return func
-
     else:
         table_pattern = re.match(  # type: ignore
             r"^(?P<schema>.+)\.(?P<table>.+)$", layer

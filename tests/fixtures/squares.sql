@@ -1,43 +1,43 @@
-CREATE OR REPLACE
-FUNCTION squares(
-    xmin integer,
-    ymin integer,
-    xmax integer,
-    ymax integer,
+CREATE OR REPLACE FUNCTION squares(
+    -- mandatory parameters
+    xmin float,
+    ymin float,
+    xmax float,
+    ymax float,
     epsg integer,
+    -- additional parameters
     depth integer default 2
 )
-RETURNS bytea
-AS $$
+RETURNS bytea AS $$
 DECLARE
     result bytea;
-    sq_width float8;
-    tile_xmin float8;
-    tile_ymin float8;
+    sq_width float;
+    bbox_xmin float;
+    bbox_ymin float;
     bounds geometry;
     bounds_merc geometry;
 BEGIN
-    -- Find the tile bounds
+    -- Find the bbox bounds
     bounds := ST_MakeEnvelope(xmin, ymin, xmax, ymax, epsg);
 
     -- Find the bottom corner of the bounds
-    tile_xmin := ST_XMin(bounds);
-    tile_ymin := ST_YMin(bounds);
+    bbox_xmin := ST_XMin(bounds);
+    bbox_ymin := ST_YMin(bounds);
 
-    -- We want tile divided up into depth*depth squares per tile,
+    -- We want bbox divided up into depth*depth squares per bbox,
     -- so what is the width of a square?
     sq_width := (ST_XMax(bounds) - ST_XMin(bounds)) / depth;
 
     WITH mvtgeom AS (
         SELECT
-            -- Fill in the tile with all the squares
+            -- Fill in the bbox with all the squares
             ST_AsMVTGeom(
                 ST_SetSRID(
                     ST_MakeEnvelope(
-                        tile_xmin + sq_width * (a - 1),
-                        tile_ymin + sq_width * (b - 1),
-                        tile_xmin + sq_width * a,
-                        tile_ymin + sq_width * b
+                        bbox_xmin + sq_width * (a - 1),
+                        bbox_ymin + sq_width * (b - 1),
+                        bbox_xmin + sq_width * a,
+                        bbox_ymin + sq_width * b
                     ),
                     epsg
                 ),

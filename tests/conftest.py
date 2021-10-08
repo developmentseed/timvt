@@ -35,7 +35,14 @@ def app(database_url, monkeypatch):
     monkeypatch.setenv("DEFAULT_MINZOOM", 5)
     monkeypatch.setenv("DEFAULT_MAXZOOM", 12)
 
+    from timvt.functions import registry as FunctionRegistry
+    from timvt.layer import Function
     from timvt.main import app
+
+    # Register Function to the internal registery
+    FunctionRegistry.register(
+        Function.from_file(id="squares", infile=os.path.join(DATA_DIR, "squares.sql"),)
+    )
 
     with TestClient(app) as app:
         yield app
