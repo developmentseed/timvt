@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfiles/app/Dockerfile
+      dockerfile: Dockerfile
     environment:
       - HOST=0.0.0.0
       - PORT=8081
@@ -27,8 +27,8 @@ services:
 
   database:
     build:
-      context: ./Dockerfiles/db
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.db
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
