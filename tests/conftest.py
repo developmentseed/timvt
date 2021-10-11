@@ -53,7 +53,7 @@ def app(database_url, monkeypatch):
             minzoom=0,
             maxzoom=9,
             bounds=[0.0, 0.0, 180.0, 90.0],
-            arguments=[{"name": "depth", "default": 2}],
+            options=[{"name": "depth", "default": 2}],
         )
     )
 
