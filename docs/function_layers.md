@@ -1,7 +1,7 @@
 
 As for [`pg_tileserv`](https://github.com/CrunchyData/pg_tileserv) and [`martin`](https://github.com/urbica/martin), TiMVT can support `Function` layer/source.
 
-Functions are database functions which ca be use to create vector tile and must of the form `function(xmin float, ymin float, xmax float, ymax: float, epsg: integer ...)`.
+Functions are database functions which can be use to create vector tile and must of the form `function(xmin float, ymin float, xmax float, ymax: float, epsg: integer ...)`.
 
 ## Minimal Application
 
