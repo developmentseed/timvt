@@ -10,11 +10,8 @@ inst_reqs = [
     "buildpg>=0.3",
     "fastapi>=0.65,<0.68",
     "jinja2>=2.11.2,<3.0.0",
-    "morecantile>=3.0.0a1,<3.1",
+    "morecantile>=3.0,<3.1",
     "starlette-cramjam>=0.1.0,<0.2",
-    "dataclasses;python_version<'3.7'",
-    "async_exit_stack>=1.0.1,<2.0.0;python_version<'3.7'",
-    "async_generator>=1.10,<2.0.0;python_version<'3.7'",
     "importlib_resources>=1.1.0;python_version<'3.9'",
 ]
 

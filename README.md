@@ -1,5 +1,3 @@
-**Work In Progress**
-
 <p align="center">
   <img src="https://user-images.githubusercontent.com/10407788/106793743-d5b27e80-6625-11eb-924a-77c54abff993.jpg"/>
   <p align="center">A lightweight PostGIS based dynamic vector tile server.</p>
