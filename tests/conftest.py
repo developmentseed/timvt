@@ -44,5 +44,18 @@ def app(database_url, monkeypatch):
         Function.from_file(id="squares", infile=os.path.join(DATA_DIR, "squares.sql"),)
     )
 
+    # Register the same function but we different options
+    FunctionRegistry.register(
+        Function.from_file(
+            id="squares2",
+            infile=os.path.join(DATA_DIR, "squares.sql"),
+            function_name="squares",
+            minzoom=0,
+            maxzoom=9,
+            bounds=[0.0, 0.0, 180.0, 90.0],
+            arguments=[{"name": "depth", "default": 2}],
+        )
+    )
+
     with TestClient(app) as app:
         yield app

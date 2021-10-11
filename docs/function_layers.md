@@ -32,8 +32,8 @@ async def shutdown_event():
 # Register Function to the internal registery
 FunctionRegistry.register(
     Function.from_file(
-        id="squares",  # id MUST be the name of the function
-        infile="...",  # PATH TO SQL FILE
+        id="squares",  # By default TiMVT will call a function call `squares`
+        infile="my_sql_file.sql",  # PATH TO SQL FILE
     )
 )
 
@@ -44,6 +44,35 @@ mvt_tiler = VectorTilerFactory(
     with_viewer=True,
 )
 app.include_router(mvt_tiler.router, tags=["Tiles"])
+```
+
+### Function Options
+
+When registering a `Function`, the user can set different options:
+
+- **id** (required): name of the Layer which will then be used in the endpoint routes.
+- **infile** (required): path to the SQL code
+- **function_name**: name of the SQL function within the SQL code. Defaults to `id`.
+- **bounds**: Bounding Box for the area of usage (this is for `documentation` only).
+- **minzoom**: minimum zoom level (this is for `documentation` only).
+- **maxzoom**: maximum zoom level (this is for `documentation` only).
+- **options**: List of options available per function (this is for `documentation` only).
+
+```python
+# Function with Options
+FunctionRegistry.register(
+    Function.from_file(
+        id="squares2",
+        infile="my_sql_file.sql",  # PATH TO SQL FILE
+        function_name="squares_but_not_squares",  # This allows to call a specific function within the SQL code
+        bounds=[0.0, 0.0, 180.0, 90.0],  # overwrite default bounds
+        minzoom=9,  # overwrite default minzoom
+        maxzoom=24,  # overwrite default maxzoom
+        options={  # Provide arguments information for documentation
+            {"name": "depth", "default": 2}
+        }
+    )
+)
 ```
 
 ## Function Layer Examples
