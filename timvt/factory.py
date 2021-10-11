@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Type
 from urllib.parse import urlencode
 
-from morecantile import TileMatrixSet
+from morecantile import Tile, TileMatrixSet
 
 from timvt.dependencies import (
     LayerParams,
@@ -100,14 +100,12 @@ class VectorTilerFactory:
         )
         async def tile(
             request: Request,
-            tile: TileParams = Depends(),
+            tile: Tile = Depends(TileParams),
             tms: TileMatrixSet = Depends(self.tms_dependency),
             layer=Depends(self.layer_dependency),
         ):
             """Return vector tile."""
             pool = request.app.state.pool
-            bbox = tms.xy_bounds(tile)
-            epsg = tms.crs.to_epsg()
 
             qs_key_to_remove = ["tilematrixsetid"]
             kwargs = dict(
@@ -118,7 +116,7 @@ class VectorTilerFactory:
                 ]
             )
 
-            content = await layer.get_tile(pool, bbox, epsg, **kwargs)
+            content = await layer.get_tile(pool, tile, tms, **kwargs)
 
             return Response(bytes(content), media_type=MimeTypes.pbf.value)
 

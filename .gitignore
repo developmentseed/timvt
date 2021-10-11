@@ -106,3 +106,5 @@ cdk.out/
 .idea/
 
 docs/api
+
+benchmark/
