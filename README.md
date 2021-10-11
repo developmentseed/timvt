@@ -16,7 +16,8 @@
       <img src="https://img.shields.io/pypi/v/timvt?color=%2334D058&label=pypi%20package" alt="Package version">
   </a>
   <a href="https://github.com/developmentseed/timvt/blob/master/LICENSE" target="_blank">
-      <img src="https://img.shields.io/github/timvt/developmentseed/timvt.svg" alt="Downloads">
+      <img src="https://img.shields.io/github/license/developmentseed/timvt.svg" alt="License">
+
   </a>
 </p>
 
