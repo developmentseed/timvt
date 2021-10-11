@@ -57,8 +57,10 @@ async def shutdown_event():
 
 
 # Register endpoints.
-mvt_tiler = VectorTilerFactory()
-app.include_router(mvt_tiler.router, tags=["Tiles"])
+mvt_tiler = VectorTilerFactory(
+    with_tables_metadata=True, with_functions_metadata=True, with_viewer=True,
+)
+app.include_router(mvt_tiler.router)
 
 tms = TMSFactory()
 app.include_router(tms.router, tags=["TileMatrixSets"])
@@ -66,7 +68,7 @@ app.include_router(tms.router, tags=["TileMatrixSets"])
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def index(request: Request):
-    """Index of tables."""
+    """DEMO."""
     return templates.TemplateResponse(
         name="index.html",
         context={"index": request.app.state.table_catalog, "request": request},

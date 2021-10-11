@@ -35,7 +35,27 @@ def app(database_url, monkeypatch):
     monkeypatch.setenv("DEFAULT_MINZOOM", 5)
     monkeypatch.setenv("DEFAULT_MAXZOOM", 12)
 
+    from timvt.functions import registry as FunctionRegistry
+    from timvt.layer import Function
     from timvt.main import app
+
+    # Register Function to the internal registery
+    FunctionRegistry.register(
+        Function.from_file(id="squares", infile=os.path.join(DATA_DIR, "squares.sql"),)
+    )
+
+    # Register the same function but we different options
+    FunctionRegistry.register(
+        Function.from_file(
+            id="squares2",
+            infile=os.path.join(DATA_DIR, "squares.sql"),
+            function_name="squares",
+            minzoom=0,
+            maxzoom=9,
+            bounds=[0.0, 0.0, 180.0, 90.0],
+            options=[{"name": "depth", "default": 2}],
+        )
+    )
 
     with TestClient(app) as app:
         yield app

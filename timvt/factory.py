@@ -7,16 +7,16 @@ from urllib.parse import urlencode
 from morecantile import TileMatrixSet
 
 from timvt.dependencies import (
-    TableParams,
+    LayerParams,
     TileMatrixSetNames,
     TileMatrixSetParams,
     TileParams,
 )
+from timvt.functions import registry as FunctionRegistry
+from timvt.layer import Function, Layer, Table
 from timvt.models.mapbox import TileJSON
-from timvt.models.metadata import TableMetadata
 from timvt.models.OGC import TileMatrixSetList
 from timvt.resources.enums import MimeTypes
-from timvt.settings import MAX_FEATURES_PER_TILE, TILE_BUFFER, TILE_RESOLUTION
 
 from fastapi import APIRouter, Depends, Query
 
@@ -51,8 +51,12 @@ class VectorTilerFactory:
     # TileMatrixSet dependency
     tms_dependency: Callable[..., TileMatrixSet] = TileMatrixSetParams
 
-    # Table dependency
-    table_dependency: Callable[..., TableMetadata] = TableParams
+    # Table/Function dependency
+    layer_dependency: Callable[..., Layer] = LayerParams
+
+    with_tables_metadata: bool = False
+    with_functions_metadata: bool = False
+    with_viewer: bool = False
 
     # Router Prefix is needed to find the path for routes when prefixed
     # e.g if you mount the route with `/foo` prefix, set router_prefix to foo
@@ -64,10 +68,16 @@ class VectorTilerFactory:
 
     def register_routes(self):
         """Register Routes."""
-        self.tile()
-        self.tilejson()
-        self.metadata()
-        self.viewer()
+        self.register_tiles()
+
+        if self.with_tables_metadata:
+            self.register_tables_metadata()
+
+        if self.with_functions_metadata:
+            self.register_functions_metadata()
+
+        if self.with_viewer:
+            self.register_viewer()
 
     def url_for(self, request: Request, name: str, **path_params: Any) -> str:
         """Return full url (with prefix) for a specific endpoint."""
@@ -77,123 +87,58 @@ class VectorTilerFactory:
             base_url += self.router_prefix.lstrip("/")
         return url_path.make_absolute_url(base_url=base_url)
 
-    def tile(self):
+    def register_tiles(self):
         """Register /tiles endpoints."""
 
-        @self.router.get("/tiles/{table}/{z}/{x}/{y}.pbf", **TILE_RESPONSE_PARAMS)
         @self.router.get(
-            "/tiles/{TileMatrixSetId}/{table}/{z}/{x}/{y}.pbf", **TILE_RESPONSE_PARAMS
+            "/tiles/{layer}/{z}/{x}/{y}.pbf", **TILE_RESPONSE_PARAMS, tags=["Tiles"]
+        )
+        @self.router.get(
+            "/tiles/{TileMatrixSetId}/{layer}/{z}/{x}/{y}.pbf",
+            **TILE_RESPONSE_PARAMS,
+            tags=["Tiles"],
         )
         async def tile(
             request: Request,
             tile: TileParams = Depends(),
             tms: TileMatrixSet = Depends(self.tms_dependency),
-            table: TableMetadata = Depends(self.table_dependency),
-            columns: Optional[str] = Query(
-                None,
-                description="Comma-seprated list of properties (column's name) to include in the tile",
-            ),
-            limit: Optional[int] = Query(
-                None,
-                description=f"Number of features to write to a tile. Defaults to {MAX_FEATURES_PER_TILE}.",
-            ),
-            resolution: Optional[int] = Query(
-                None, description=f"Tile's resolution. Defaults to {TILE_RESOLUTION}.",
-            ),
-            buffer: Optional[int] = Query(
-                None,
-                description=f"Size of extra data to add for a tile. Defaults to {TILE_BUFFER}.",
-            ),
+            layer=Depends(self.layer_dependency),
         ):
             """Return vector tile."""
             pool = request.app.state.pool
-
-            limit = limit if limit is not None else MAX_FEATURES_PER_TILE
-            limitstr = f"LIMIT {limit}" if limit > -1 else ""
-
-            resolution = resolution if resolution is not None else TILE_RESOLUTION
-            buffer = buffer if buffer is not None else TILE_BUFFER
-
-            # create list of columns to return
-            geometry_column = table.geometry_column
-            cols = table.properties
-            if geometry_column in cols:
-                del cols[geometry_column]
-            if columns is not None:
-                include_cols = [c.strip() for c in columns.split(",")]
-                for c in cols.copy():
-                    if c not in include_cols:
-                        del cols[c]
-            colstring = ", ".join(list(cols))
-
             bbox = tms.xy_bounds(tile)
             epsg = tms.crs.to_epsg()
-            segSize = bbox.right - bbox.left
 
-            async with pool.acquire() as conn:
-                sql_query = f"""
-                    WITH
-                    bounds AS (
-                        SELECT
-                            ST_Segmentize(
-                                ST_MakeEnvelope(
-                                    :xmin,
-                                    :ymin,
-                                    :xmax,
-                                    :ymax,
-                                    :epsg
-                                ),
-                                :seg_size
-                            ) AS geom
-                    ),
-                    mvtgeom AS (
-                        SELECT ST_AsMVTGeom(
-                            ST_Transform(t.{geometry_column}, :epsg),
-                            bounds.geom,
-                            :tile_resolution,
-                            :tile_buffer
-                        ) AS geom, {colstring}
-                        FROM {table.id} t, bounds
-                        WHERE ST_Intersects(
-                            ST_Transform(t.{geometry_column}, 4326),
-                            ST_Transform(bounds.geom, 4326)
-                        ) {limitstr}
-                    )
-                    SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
-                """
+            qs_key_to_remove = ["tilematrixsetid"]
+            kwargs = dict(
+                [
+                    (key, value)
+                    for (key, value) in request.query_params._list
+                    if key.lower() not in qs_key_to_remove
+                ]
+            )
 
-                content = await conn.fetchval_b(
-                    sql_query,
-                    xmin=bbox.left,
-                    ymin=bbox.bottom,
-                    xmax=bbox.right,
-                    ymax=bbox.top,
-                    epsg=epsg,
-                    seg_size=segSize,
-                    tile_resolution=resolution,
-                    tile_buffer=buffer,
-                )
+            content = await layer.get_tile(pool, bbox, epsg, **kwargs)
 
             return Response(bytes(content), media_type=MimeTypes.pbf.value)
 
-    def tilejson(self):
-        """Register tilejson endpoints."""
-
         @self.router.get(
-            "/{table}/tilejson.json",
+            "/{layer}/tilejson.json",
             response_model=TileJSON,
             responses={200: {"description": "Return a tilejson"}},
             response_model_exclude_none=True,
+            tags=["Tiles"],
         )
         @self.router.get(
-            "/{TileMatrixSetId}/{table}/tilejson.json",
+            "/{TileMatrixSetId}/{layer}/tilejson.json",
             response_model=TileJSON,
             responses={200: {"description": "Return a tilejson"}},
             response_model_exclude_none=True,
+            tags=["Tiles"],
         )
         async def tilejson(
             request: Request,
-            table: TableMetadata = Depends(self.table_dependency),
+            layer=Depends(self.layer_dependency),
             tms: TileMatrixSet = Depends(self.tms_dependency),
             minzoom: Optional[int] = Query(
                 None, description="Overwrite default minzoom."
@@ -201,120 +146,147 @@ class VectorTilerFactory:
             maxzoom: Optional[int] = Query(
                 None, description="Overwrite default maxzoom."
             ),
-            columns: Optional[str] = Query(
-                None,
-                description="Comma-seprated list of properties (column's name) to include in the tile",
-            ),
-            limit: Optional[int] = Query(
-                None,
-                description=f"Number of features to write to a tile. Defaults to {MAX_FEATURES_PER_TILE}.",
-            ),
-            resolution: Optional[int] = Query(
-                None, description=f"Tile's resolution. Defaults to {TILE_RESOLUTION}.",
-            ),
-            buffer: Optional[int] = Query(
-                None,
-                description=f"Size of extra data to add for a tile. Defaults to {TILE_BUFFER}.",
-            ),
         ):
             """Return TileJSON document."""
-            kwargs: Dict[str, Any] = {
+            path_params: Dict[str, Any] = {
                 "TileMatrixSetId": tms.identifier,
-                "table": table.id,
+                "layer": layer.id,
                 "z": "{z}",
                 "x": "{x}",
                 "y": "{y}",
             }
-            tile_endpoint = self.url_for(request, "tile", **kwargs).replace("\\", "")
+            tile_endpoint = self.url_for(request, "tile", **path_params)
 
-            qs = [
-                (key, value)
-                for (key, value) in [
-                    ("columns", columns),
-                    ("limit", limit),
-                    ("resolution", resolution),
-                    ("buffer", buffer),
+            qs_key_to_remove = ["tilematrixsetid", "minzoom", "maxzoom"]
+            query_params = dict(
+                [
+                    (key, value)
+                    for (key, value) in request.query_params._list
+                    if key.lower() not in qs_key_to_remove
                 ]
-                if value is not None
-            ]
+            )
 
-            if qs:
-                tile_endpoint += f"?{urlencode(qs)}"
+            if query_params:
+                tile_endpoint += f"?{urlencode(query_params)}"
 
-            minzoom = minzoom if minzoom is not None else (table.minzoom or tms.minzoom)
-            maxzoom = maxzoom if maxzoom is not None else (table.maxzoom or tms.maxzoom)
+            minzoom = minzoom if minzoom is not None else (layer.minzoom or tms.minzoom)
+            maxzoom = maxzoom if maxzoom is not None else (layer.maxzoom or tms.maxzoom)
 
             return {
                 "minzoom": minzoom,
                 "maxzoom": maxzoom,
-                "name": table.id,
-                "bounds": table.bounds,
+                "name": layer.id,
+                "bounds": layer.bounds,
                 "tiles": [tile_endpoint],
             }
 
-    def metadata(self):
+    def register_tables_metadata(self):
         """Register metadata endpoints."""
 
         @self.router.get(
-            "/index.json",
-            response_model=List[TableMetadata],
+            "/tables.json",
+            response_model=List[Table],
             response_model_exclude_none=True,
+            tags=["Tables"],
         )
-        async def index_json(request: Request):
+        async def tables_index(request: Request):
             """Index of tables."""
 
             def _get_tiles_url(id) -> str:
-                kwargs = {
-                    "table": id,
-                    "z": "{z}",
-                    "x": "{x}",
-                    "y": "{y}",
-                }
                 try:
-                    return self.url_for(request, "tile", **kwargs)
+                    return self.url_for(
+                        request, "tile", layer=id, z="{z}", x="{x}", y="{y}"
+                    )
                 except NoMatchFound:
                     return None
 
             return [
-                TableMetadata(**r, tileurl=_get_tiles_url(r["id"]))
+                Table(**r, tileurl=_get_tiles_url(r["id"]))
                 for r in request.app.state.table_catalog
             ]
 
         @self.router.get(
-            "/{table}.json",
-            response_model=TableMetadata,
+            "/table/{layer}.json",
+            response_model=Table,
             responses={200: {"description": "Return table metadata"}},
             response_model_exclude_none=True,
+            tags=["Tables"],
         )
-        async def metadata(
-            request: Request, table: TableMetadata = Depends(self.table_dependency)
+        async def table_metadata(
+            request: Request, layer=Depends(self.layer_dependency),
         ):
             """Return table metadata."""
 
             def _get_tiles_url(id) -> str:
-                kwargs = {
-                    "table": id,
-                    "z": "{z}",
-                    "x": "{x}",
-                    "y": "{y}",
-                }
                 try:
-                    return self.url_for(request, "tile", **kwargs)
+                    return self.url_for(
+                        request, "tile", layer=id, z="{z}", x="{x}", y="{y}"
+                    )
                 except NoMatchFound:
                     return None
 
-            table.tileurl = _get_tiles_url(table.id)
-            return table
+            layer.tileurl = _get_tiles_url(layer.id)
+            return layer
 
-    def viewer(self):
+    def register_functions_metadata(self):  # noqa
+        """Register function metadata endpoints."""
+
+        @self.router.get(
+            "/functions.json",
+            response_model=List[Function],
+            response_model_exclude_none=True,
+            response_model_exclude={"sql"},
+            tags=["Functions"],
+        )
+        async def functions_index(request: Request):
+            """Index of functions."""
+
+            def _get_tiles_url(id) -> str:
+                try:
+                    return self.url_for(
+                        request, "tile", layer=id, z="{z}", x="{x}", y="{y}"
+                    )
+                except NoMatchFound:
+                    return None
+
+            return [
+                Function(**func.dict(exclude_none=True), tileurl=_get_tiles_url(id))
+                for id, func in FunctionRegistry.funcs.items()
+            ]
+
+        @self.router.get(
+            "/function/{layer}.json",
+            response_model=Function,
+            responses={200: {"description": "Return Function metadata"}},
+            response_model_exclude_none=True,
+            response_model_exclude={"sql"},
+            tags=["Functions"],
+        )
+        async def function_metadata(
+            request: Request, layer=Depends(self.layer_dependency),
+        ):
+            """Return table metadata."""
+
+            def _get_tiles_url(id) -> str:
+                try:
+                    return self.url_for(
+                        request, "tile", layer=id, z="{z}", x="{x}", y="{y}"
+                    )
+                except NoMatchFound:
+                    return None
+
+            layer.tileurl = _get_tiles_url(layer.id)
+            return layer
+
+    def register_viewer(self):
         """Register viewer."""
 
-        @self.router.get("/viewer/{table}", response_class=HTMLResponse)
-        async def demo(
-            request: Request, table: TableMetadata = Depends(TableParams),
-        ):
+        @self.router.get(
+            "/{layer}/viewer", response_class=HTMLResponse, tags=["Viewer"]
+        )
+        async def demo(request: Request, layer=Depends(LayerParams)):
             """Demo for each table."""
-            tile_url = request.url_for("tilejson", table=table.id).replace("\\", "")
+            tile_url = self.url_for(request, "tilejson", layer=layer.id)
 
             return templates.TemplateResponse(
                 name="viewer.html",

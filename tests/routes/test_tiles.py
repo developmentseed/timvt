@@ -48,6 +48,56 @@ def test_tile(app):
 
     response = app.get("/tiles/public.landsat_wrs/0/0/0.pbf?limit=1000")
     assert response.status_code == 200
-
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) == 1000
+    assert ["id", "pr", "row", "path", "ogc_fid"] == list(
+        decoded["default"]["features"][0]["properties"]
+    )
+
+    response = app.get(
+        "/tiles/public.landsat_wrs/0/0/0.pbf?limit=1&columns=pr,row,path"
+    )
+    assert response.status_code == 200
+    decoded = mapbox_vector_tile.decode(response.content)
+    assert ["pr", "row", "path"] == list(
+        decoded["default"]["features"][0]["properties"]
+    )
+
+
+def test_function_tilejson(app):
+    """Test TileJSON endpoint."""
+    response = app.get("/squares/tilejson.json")
+    assert response.status_code == 200
+    resp_json = response.json()
+    assert resp_json["name"] == "squares"
+    assert resp_json["minzoom"] == 5
+    assert resp_json["maxzoom"] == 12
+    np.testing.assert_almost_equal(resp_json["bounds"], [-180.0, -90, 180.0, 90])
+
+    response = app.get("/squares/tilejson.json?minzoom=1&maxzoom=2")
+    assert response.status_code == 200
+    resp_json = response.json()
+    assert resp_json["name"] == "squares"
+    assert resp_json["minzoom"] == 1
+    assert resp_json["maxzoom"] == 2
+
+    response = app.get("/squares/tilejson.json?minzoom=1&maxzoom=2&depth=4")
+    assert response.status_code == 200
+    resp_json = response.json()
+    assert resp_json["name"] == "squares"
+    assert resp_json["minzoom"] == 1
+    assert resp_json["maxzoom"] == 2
+    assert "?depth=4" in resp_json["tiles"][0]
+
+
+def test_function_tile(app):
+    """request a tile."""
+    response = app.get("/tiles/squares/0/0/0.pbf")
+    assert response.status_code == 200
+    decoded = mapbox_vector_tile.decode(response.content)
+    assert len(decoded["default"]["features"]) == 4
+
+    response = app.get("/tiles/squares/0/0/0.pbf?depth=4")
+    assert response.status_code == 200
+    decoded = mapbox_vector_tile.decode(response.content)
+    assert len(decoded["default"]["features"]) == 16

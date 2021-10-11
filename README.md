@@ -29,7 +29,7 @@
 
 ---
 
-`TiMVT`, pronounced **tee-MVT**, is lightweight service, which sole goal is to create [Vector Tiles](https://github.com/mapbox/vector-tile-spec) dynamically from [PostGIS](https://github.com/postgis/postgis).
+`TiMVT`, pronounced **tee-MVT**, is a python package which helps creating lightweight [Vector Tiles](https://github.com/mapbox/vector-tile-spec) service from [PostGIS](https://github.com/postgis/postgis) Database.
 
 Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) framework, titiler is written in Python using async/await asynchronous code to improve the performances and handle heavy loads.
 
@@ -39,6 +39,7 @@ Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) fr
 
 - Multiple TileMatrixSets via [morecantile](https://github.com/developmentseed/morecantile). Default is set to WebMercatorQuad which is the usual Web Mercator projection used in most of Wep Map libraries.)
 - Built with FastAPI
+- Table and Function layers
 - Async API
 
 ## Requirements and Setup
@@ -54,18 +55,38 @@ Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) fr
 
 If you want more info about `ST_AsMVT` function or on the subject of creating Vector Tile from PostGIS, please read this great article from Paul Ramsey: https://info.crunchydata.com/blog/dynamic-vector-tiles-from-postgis
 
-### Setup locally
+## Minimal Application
 
-1. Download
+```python
+from timvt.db import close_db_connection, connect_to_db
+from timvt.factory import VectorTilerFactory
+from fastapi import FastAPI, Request
+
+# Create Application.
+app = FastAPI()
+
+# Register Start/Stop application event handler to setup/stop the database connection
+@app.on_event("startup")
+async def startup_event():
+    """Application startup: register the database connection and create table list."""
+    await connect_to_db(app)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Application shutdown: de-register the database connection."""
+    await close_db_connection(app)
+
+# Register endpoints.
+mvt_tiler = VectorTilerFactory(
+    with_tables_metadata=True,
+    with_functions_metadata=True,  # add Functions metadata endpoints (/functions.json, /{function_name}.json)
+    with_viewer=True,
+)
+app.include_router(mvt_tiler.router, tags=["Tiles"])
 ```
-$ git clone https://github.com/developmentseed/timvt.git && cd timvt
-```
-2. Install
-```
-# Install timvt dependencies and Uvicorn (a lightning-fast ASGI server)
-$ pip install -e .
-```
-3. Configuration
+
+#### Configuration
 
 To be able to create Vector Tile, the application will need access to the PostGIS database. `timvt` uses [starlette](https://www.starlette.io/config/)'s configuration pattern which make use of environment variable and/or `.env` file to pass variable to the application.
 
@@ -81,25 +102,23 @@ POSTGRES_PORT=5432
 DATABASE_URL=postgresql://username:password@0.0.0.0:5432/postgis
 ```
 
-4. Launch
+## Default Application
+
+While we encourage users to write their own application using `timvt` package, we also provide a default `production ready` application:
+
 ```
+$ git clone https://github.com/developmentseed/timvt.git && cd timvt
+
+# Install timvt dependencies and Uvicorn (a lightning-fast ASGI server)
+$ pip install -e .["server"]
+
+# Launch Demo Application
 $ uvicorn timvt.main:app --reload
 ```
 
-### With Docker
-
-Using Docker is maybe the easiest approach, and with `docker-compose` it's even easier to setup the database and the application using only one command line.
-
-```bash
-$ git clone https://github.com/developmentseed/timvt.git
-$ docker-compose up --build
-```
-
-## Documentation
-
 `:endpoint:/docs`
 
-![](https://user-images.githubusercontent.com/10407788/106812010-2681a180-663d-11eb-8fe9-9ed2de6e0ddd.png)
+![](https://user-images.githubusercontent.com/10407788/136578935-e1170784-5a4f-4946-842c-9a6de39165f6.jpg)
 
 
 ## Contribution & Development
