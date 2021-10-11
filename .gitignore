@@ -104,3 +104,5 @@ cdk.out/
 
 # pycharm
 .idea/
+
+docs/api

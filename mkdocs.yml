@@ -16,6 +16,18 @@ extra:
 nav:
   - TiMVT: "index.md"
   - Function Layers: "function_layers.md"
+  - API:
+    - dependencies: api/timvt/dependencies.md
+    - factory: api/timvt/factory.md
+    - layer: api/timvt/layer.md
+    - functions: api/timvt/functions.md
+    - db: api/timvt/db.md
+    - settings: api/timvt/settings.md
+    - enums: api/timvt/resources/enums.md
+    - models:
+      - mapbox: api/timvt/models/mapbox.md
+      - OGC: api/timvt/models/OGC.md
+
   - Development - Contributing: "contributing.md"
   - Release Notes: "release-notes.md"
 

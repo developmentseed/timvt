@@ -28,8 +28,26 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install numpy
           python -m pip install -e .["docs"]
+
+      - name: Create API docs
+        env:
+          # we need to set a fake PG url or import will fail
+          DATABASE_URL: postgresql://username:password@0.0.0.0:5439/postgis
+        run: |
+          pdocs as_markdown \
+            --output_dir docs/api \
+            --exclude_source \
+            --overwrite \
+            timvt.settings \
+            timvt.layer \
+            timvt.functions \
+            timvt.factory \
+            timvt.dependencies \
+            timvt.db \
+            timvt.resources.enums \
+            timvt.models.mapbox \
+            timvt.models.OGC
 
       - name: Deploy docs
         run: mkdocs gh-deploy --force

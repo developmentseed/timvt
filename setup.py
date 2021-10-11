@@ -33,7 +33,14 @@ extra_reqs = {
     "test": test_reqs,
     "dev": test_reqs + ["pre-commit"],
     "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
-    "docs": ["nbconvert", "mkdocs", "mkdocs-material", "mkdocs-jupyter", "pygments"],
+    "docs": [
+        "nbconvert",
+        "mkdocs",
+        "mkdocs-material",
+        "mkdocs-jupyter",
+        "pygments",
+        "pdocs",
+    ],
 }
 
 
