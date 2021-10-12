@@ -121,8 +121,21 @@ While we encourage users to write their own application using `TiMVT` package, w
 # Install timvt dependencies and Uvicorn (a lightning-fast ASGI server)
 $ pip install timvt uvicorn[standard]>=0.12.0,<0.14.0
 
+# Set Database URL environment variable so TiMVT can access it
+$ export DATABASE_URL=postgresql://username:password@0.0.0.0:5432/postgis
+
 # Launch Demo Application
 $ uvicorn timvt.main:app --reload
+```
+
+You can also use the official docker image
+
+```
+$ docker run \
+    -p 8081:8081 \
+    -e PORT=8081 \
+    -e DATABASE_URL=postgresql://username:password@0.0.0.0:5432/postgis \
+    ghcr.io/developmentseed/timvt:latest
 ```
 
 `:endpoint:/docs`
