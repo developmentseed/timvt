@@ -3,8 +3,8 @@
 import abc
 from typing import Any, Dict, List, Optional
 
+import morecantile
 from buildpg import asyncpg
-from morecantile import BoundingBox
 from pydantic import BaseModel, Field, root_validator
 
 from timvt.settings import (
@@ -36,14 +36,18 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     async def get_tile(
-        self, pool: asyncpg.BuildPgPool, bbox: BoundingBox, epsg: int, **kwargs: Any,
+        self,
+        pool: asyncpg.BuildPgPool,
+        tile: morecantile.Tile,
+        tms: morecantile.TileMatrixSet,
+        **kwargs: Any,
     ) -> bytes:
         """Return Tile Data.
 
         Args:
             pool (asyncpg.BuildPgPool): AsyncPG database connection pool.
-            bbox (morecantile.BoundingBox): Bounding Box for which to requests features.
-            epsg (int): EPSG code for the input BBOX.
+            tile (morecantile.Tile): Tile object with X,Y,Z indices.
+            tms (morecantile.TileMatrixSet): Tile Matrix Set.
             kwargs (any, optiona): Optional parameters to forward to the SQL function.
 
         Returns:
@@ -78,9 +82,15 @@ class Table(Layer):
     properties: Dict[str, str]
 
     async def get_tile(
-        self, pool: asyncpg.BuildPgPool, bbox: BoundingBox, epsg: int, **kwargs: Any,
+        self,
+        pool: asyncpg.BuildPgPool,
+        tile: morecantile.Tile,
+        tms: morecantile.TileMatrixSet,
+        **kwargs: Any,
     ):
         """Get Tile Data."""
+        bbox = tms.xy_bounds(tile)
+
         limit = kwargs.get(
             "limit", str(MAX_FEATURES_PER_TILE)
         )  # Number of features to write to a tile.
@@ -146,7 +156,7 @@ class Table(Layer):
                 ymin=bbox.bottom,
                 xmax=bbox.right,
                 ymax=bbox.top,
-                epsg=epsg,
+                epsg=tms.crs.to_epsg(),
                 seg_size=segSize,
                 tile_resolution=int(resolution),
                 tile_buffer=int(buffer),
@@ -191,9 +201,15 @@ class Function(Layer):
         return cls(id=id, sql=sql, **kwargs)
 
     async def get_tile(
-        self, pool: asyncpg.BuildPgPool, bbox: BoundingBox, epsg: int, **kwargs: Any,
+        self,
+        pool: asyncpg.BuildPgPool,
+        tile: morecantile.Tile,
+        tms: morecantile.TileMatrixSet,
+        **kwargs: Any,
     ):
         """Get Tile Data."""
+        bbox = tms.xy_bounds(tile)
+
         async with pool.acquire() as conn:
             transaction = conn.transaction()
             await transaction.start()
@@ -210,7 +226,7 @@ class Function(Layer):
                 ymin=bbox.bottom,
                 xmax=bbox.right,
                 ymax=bbox.top,
-                epsg=epsg,
+                epsg=tms.crs.to_epsg(),
             )
 
             await transaction.rollback()

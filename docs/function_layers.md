@@ -146,3 +146,176 @@ IMMUTABLE -- Same inputs always give same outputs
 STRICT -- Null input gets null output
 PARALLEL SAFE;
 ```
+
+
+## Custom Function layer
+
+So You already have an SQL `function` written but it only takes WebMercator XYZ indexes. In TiMVT we use bbox+tms to support multiple TMS but you could support simple XYZ functions by writing custom `Layer` class and dependencies.
+
+- custom **Function** Layer
+
+```python
+# custom.py
+from typing import Any
+import morecantile
+from buildpg import asyncpg
+
+from timvt import layer
+
+class Function(layer.Function):
+    "Custom Function Layer: SQL function takes xyz input."""
+
+    async def get_tile(
+        self,
+        pool: asyncpg.BuildPgPool,
+        tile: morecantile.Tile,
+        tms: morecantile.TileMatrixSet,  # tms won't be used here
+        **kwargs: Any,
+    ):
+        """Custom Get Tile method."""
+        async with pool.acquire() as conn:
+            transaction = conn.transaction()
+            await transaction.start()
+            await conn.execute(self.sql)
+
+            function_params = ":x, :y, :z"
+            if kwargs:
+                params = ", ".join([f"{k} => {v}" for k, v in kwargs.items()])
+                function_params += f", {params}"
+
+            content = await conn.fetchval_b(
+                f"SELECT {self.function_name}({function_params})",
+                x=tile.x,
+                y=tile.y,
+                z=tile.z,
+            )
+
+            await transaction.rollback()
+
+        return content
+```
+
+- custom **registery**, referencing the custom Function
+```python
+# custom_registery.py
+from dataclasses import dataclass
+from typing import ClassVar, Dict
+
+from .custom import Function
+
+@dataclass
+class Registry:
+    """function registry"""
+
+    funcs: ClassVar[Dict[str, Function]] = {}
+
+    @classmethod
+    def get(cls, key: str):
+        """lookup function by name"""
+        return cls.funcs.get(key)
+
+    @classmethod
+    def register(cls, *args: Function):
+        """register function(s)"""
+        for func in args:
+            cls.funcs[func.id] = func
+
+
+registry = Registry()
+```
+
+- custom **dependencies**
+
+```python
+# custom_dependencies.py
+import re
+from enum import Enum
+
+from fastapi import HTTPException, Path
+from starlette.requests import Request
+from morecantile import TileMatrixSet, tms
+from timvt.layer import Layer
+
+from .custom_registery import registry as FunctionRegistry
+
+
+# Custom TileMatrixSets deps (only support WebMercatorQuad)
+TileMatrixSetNames = Enum(  # type: ignore
+    "TileMatrixSetNames", [("WebMercatorQuad", "WebMercatorQuad")]
+)
+
+def TileMatrixSetParams(
+    TileMatrixSetId: TileMatrixSetNames = Query(
+        TileMatrixSetNames.WebMercatorQuad,  # type: ignore
+        description="TileMatrixSet Name",
+    ),
+) -> TileMatrixSet:
+    """TileMatrixSet parameters."""
+    return tms.get(TileMatrixSetId.name)
+
+
+# Custom Layer Params
+def LayerParams(
+    request: Request, layer: str = Path(..., description="Layer Name"),
+) -> Layer:
+    """Return Layer Object."""
+    func = FunctionRegistry.get(layer)
+    if func:
+        return func
+    else:
+        table_pattern = re.match(  # type: ignore
+            r"^(?P<schema>.+)\.(?P<table>.+)$", layer
+        )
+        if not table_pattern:
+            raise HTTPException(
+                status_code=404, detail=f"Invalid Table format '{layer}'."
+            )
+
+        assert table_pattern.groupdict()["schema"]
+        assert table_pattern.groupdict()["table"]
+
+        for r in request.app.state.table_catalog:
+            if r["id"] == layer:
+                return Table(**r)
+
+    raise HTTPException(status_code=404, detail=f"Table/Function '{layer}' not found.")
+```
+
+- Custom **Application**
+```python
+# custom_app.py
+from timvt.db import close_db_connection, connect_to_db
+from timvt.factory import TMSFactory, VectorTilerFactory
+
+from fastapi import FastAPI
+
+from .custom_dependencies import LayerParams, TileMatrixSetParams, TileMatrixSetNames
+
+app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Application startup: register the database connection and create table list."""
+    await connect_to_db(app)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Application shutdown: de-register the database connection."""
+    await close_db_connection(app)
+
+
+# Register endpoints.
+mvt_tiler = VectorTilerFactory(
+    with_tables_metadata=True,
+    with_functions_metadata=True,
+    with_viewer=True,
+    tms_dependency=TileMatrixSetParams,
+    layer_dependency=LayerParams,
+)
+app.include_router(mvt_tiler.router)
+
+tms = TMSFactory(supported_tms=TileMatrixSetNames, tms_dependency=TileMatrixSetParams)
+app.include_router(tms.router, tags=["TileMatrixSets"])
+```
