@@ -8,6 +8,8 @@ with open("README.md") as f:
 inst_reqs = [
     "asyncpg>=0.23.0",
     "buildpg>=0.3",
+    # We cannot support fastapi > 0.68 because openapi doesn't support Tuple with fixed lenght and will make the docs to fail
+    # ref: https://github.com/tiangolo/fastapi/pull/3038, https://github.com/tiangolo/fastapi/issues/1870
     "fastapi>=0.65,<0.68",
     "jinja2>=2.11.2,<3.0.0",
     "morecantile>=3.0,<3.1",
