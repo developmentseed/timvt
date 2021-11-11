@@ -6,7 +6,7 @@ Issues and pull requests are more than welcome: https://github.com/developmentse
 
 ```bash
 $ git clone https://github.com/developmentseed/timvt.git
-$ cd titiler
+$ cd timvt
 $ pip install -e .[dev]
 ```
 
@@ -22,7 +22,7 @@ $ pre-commit install
 
 ```bash
 $ git clone https://github.com/developmentseed/timvt.git
-$ cd titiler
+$ cd timvt
 $ pip install -e .["docs"]
 ```
 
