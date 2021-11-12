@@ -119,7 +119,7 @@ While we encourage users to write their own application using `TiMVT` package, w
 
 ```bash
 # Install timvt dependencies and Uvicorn (a lightning-fast ASGI server)
-$ pip install timvt uvicorn[standard]>=0.12.0,<0.14.0
+$ pip install timvt 'uvicorn[standard]>=0.12.0,<0.14.0'
 
 # Set Database URL environment variable so TiMVT can access it
 $ export DATABASE_URL=postgresql://username:password@0.0.0.0:5432/postgis
