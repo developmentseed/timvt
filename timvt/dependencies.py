@@ -3,7 +3,7 @@
 import re
 from enum import Enum
 
-from morecantile import Tile, TileMatrixSet, tms
+import morecantile
 
 from timvt.functions import registry as FunctionRegistry
 from timvt.layer import Layer, Table
@@ -13,7 +13,7 @@ from fastapi import HTTPException, Path, Query
 from starlette.requests import Request
 
 TileMatrixSetNames = Enum(  # type: ignore
-    "TileMatrixSetNames", [(a, a) for a in sorted(tms.list())]
+    "TileMatrixSetNames", [(a, a) for a in sorted(morecantile.tms.list())]
 )
 
 
@@ -22,22 +22,23 @@ def TileMatrixSetParams(
         TileMatrixSetNames.WebMercatorQuad,  # type: ignore
         description="TileMatrixSet Name (default: 'WebMercatorQuad')",
     ),
-) -> TileMatrixSet:
+) -> morecantile.TileMatrixSet:
     """TileMatrixSet parameters."""
-    return tms.get(TileMatrixSetId.name)
+    return morecantile.tms.get(TileMatrixSetId.name)
 
 
 def TileParams(
     z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
     x: int = Path(..., description="Tiles's column"),
     y: int = Path(..., description="Tiles's row"),
-) -> Tile:
+) -> morecantile.Tile:
     """Tile parameters."""
-    return Tile(x, y, z)
+    return morecantile.Tile(x, y, z)
 
 
 def LayerParams(
-    request: Request, layer: str = Path(..., description="Layer Name"),
+    request: Request,
+    layer: str = Path(..., description="Layer Name"),
 ) -> Layer:
     """Return Layer Object."""
     func = FunctionRegistry.get(layer)

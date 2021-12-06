@@ -58,7 +58,9 @@ async def shutdown_event():
 
 # Register endpoints.
 mvt_tiler = VectorTilerFactory(
-    with_tables_metadata=True, with_functions_metadata=True, with_viewer=True,
+    with_tables_metadata=True,
+    with_functions_metadata=True,
+    with_viewer=True,
 )
 app.include_router(mvt_tiler.router)
 

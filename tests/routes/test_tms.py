@@ -1,5 +1,7 @@
 """test TileMatrixSets endpoints."""
 
+from morecantile import tms
+
 
 def test_tilematrix(app):
     """test /tileMatrixSet endpoint."""
@@ -7,11 +9,14 @@ def test_tilematrix(app):
     assert response.status_code == 200
     body = response.json()
 
-    assert len(body["tileMatrixSets"]) == 11  # morecantile has 10 defaults
-    tms = list(filter(lambda m: m["id"] == "WebMercatorQuad", body["tileMatrixSets"]))[
-        0
-    ]
-    assert tms["links"][0]["href"] == "http://testserver/tileMatrixSets/WebMercatorQuad"
+    assert len(body["tileMatrixSets"]) == len(tms.list())
+    tileMatrixSets = list(
+        filter(lambda m: m["id"] == "WebMercatorQuad", body["tileMatrixSets"])
+    )[0]
+    assert (
+        tileMatrixSets["links"][0]["href"]
+        == "http://testserver/tileMatrixSets/WebMercatorQuad"
+    )
 
 
 def test_tilematrixInfo(app):
