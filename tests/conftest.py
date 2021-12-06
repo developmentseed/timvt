@@ -41,7 +41,10 @@ def app(database_url, monkeypatch):
 
     # Register Function to the internal registery
     FunctionRegistry.register(
-        Function.from_file(id="squares", infile=os.path.join(DATA_DIR, "squares.sql"),)
+        Function.from_file(
+            id="squares",
+            infile=os.path.join(DATA_DIR, "squares.sql"),
+        )
     )
 
     # Register the same function but we different options

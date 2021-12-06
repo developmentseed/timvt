@@ -37,7 +37,8 @@ def TileParams(
 
 
 def LayerParams(
-    request: Request, layer: str = Path(..., description="Layer Name"),
+    request: Request,
+    layer: str = Path(..., description="Layer Name"),
 ) -> Layer:
     """Return Layer Object."""
     func = FunctionRegistry.get(layer)

@@ -211,7 +211,8 @@ class VectorTilerFactory:
             tags=["Tables"],
         )
         async def table_metadata(
-            request: Request, layer=Depends(self.layer_dependency),
+            request: Request,
+            layer=Depends(self.layer_dependency),
         ):
             """Return table metadata."""
 
@@ -261,7 +262,8 @@ class VectorTilerFactory:
             tags=["Functions"],
         )
         async def function_metadata(
-            request: Request, layer=Depends(self.layer_dependency),
+            request: Request,
+            layer=Depends(self.layer_dependency),
         ):
             """Return table metadata."""
 

@@ -119,6 +119,10 @@ class Table(Layer):
 
         segSize = bbox.right - bbox.left
 
+        # use epsg or proj4
+        tms_proj = f"'{tms.crs.to_proj4()}'::text"
+        out_proj = tms.crs.to_epsg() or tms_proj
+
         async with pool.acquire() as conn:
             sql_query = f"""
                 WITH
@@ -129,15 +133,14 @@ class Table(Layer):
                                 :xmin,
                                 :ymin,
                                 :xmax,
-                                :ymax,
-                                :epsg
+                                :ymax
                             ),
                             :seg_size
                         ) AS geom
                 ),
                 mvtgeom AS (
                     SELECT ST_AsMVTGeom(
-                        ST_Transform(t.{geometry_column}, :epsg),
+                        ST_Transform(t.{geometry_column}, {out_proj}),
                         bounds.geom,
                         :tile_resolution,
                         :tile_buffer
@@ -145,7 +148,7 @@ class Table(Layer):
                     FROM {self.id} t, bounds
                     WHERE ST_Intersects(
                         ST_Transform(t.{geometry_column}, 4326),
-                        ST_Transform(bounds.geom, 4326)
+                        ST_Transform(bounds.geom, {tms_proj}, 4326)
                     ) {limitstr}
                 )
                 SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
@@ -156,7 +159,6 @@ class Table(Layer):
                 ymin=bbox.bottom,
                 xmax=bbox.right,
                 ymax=bbox.top,
-                epsg=tms.crs.to_epsg(),
                 seg_size=segSize,
                 tile_resolution=int(resolution),
                 tile_buffer=int(buffer),
