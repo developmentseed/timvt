@@ -1,10 +1,11 @@
 """timvt Metadata models."""
 
 import abc
+import logging
 from typing import Any, Dict, List, Optional
 
 import morecantile
-from buildpg import asyncpg
+from buildpg import V, asyncpg, funcs, render, select_fields
 from pydantic import BaseModel, Field, root_validator
 
 from timvt.errors import MissingEPSGCode
@@ -15,6 +16,8 @@ from timvt.settings import (
     TILE_BUFFER,
     TILE_RESOLUTION,
 )
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class Layer(BaseModel, metaclass=abc.ABCMeta):
@@ -70,6 +73,7 @@ class Table(Layer):
         type (str): Layer's type.
         schema (str): Table's database schema (e.g public).
         geometry_type (str): Table's geometry type (e.g polygon).
+        srid (int): Table's SRID
         geometry_column (str): Name of the geomtry column in the table.
         properties (Dict): Properties available in the table.
 
@@ -80,6 +84,7 @@ class Table(Layer):
     table: str
     geometry_type: str
     geometry_column: str
+    geometry_srid: int
     properties: Dict[str, str]
 
     async def get_tile(
@@ -95,6 +100,10 @@ class Table(Layer):
         limit = kwargs.get(
             "limit", str(MAX_FEATURES_PER_TILE)
         )  # Number of features to write to a tile.
+        limit = min(int(limit), MAX_FEATURES_PER_TILE)
+        if limit == -1:
+            limit = MAX_FEATURES_PER_TILE
+
         columns = kwargs.get(
             "columns"
         )  # Comma-seprated list of properties (column's name) to include in the tile
@@ -103,10 +112,9 @@ class Table(Layer):
             "buffer", str(TILE_BUFFER)
         )  # Size of extra data to add for a tile.
 
-        limitstr = f"LIMIT {limit}" if int(limit) > -1 else ""
-
         # create list of columns to return
         geometry_column = self.geometry_column
+        geometry_srid = self.geometry_srid
         cols = self.properties
         if geometry_column in cols:
             del cols[geometry_column]
@@ -116,29 +124,17 @@ class Table(Layer):
             for c in cols.copy():
                 if c not in include_cols:
                     del cols[c]
-        colstring = ", ".join(list(cols))
 
         segSize = bbox.right - bbox.left
 
-        # Output TMS SRID (epsg code or proj4)
-        tms_proj = f"'{tms.crs.to_proj4()}'::text"
-        tms_epsg = tms.crs.to_epsg()
-        out_srid = tms_epsg or tms_proj
-
-        # SQL Expression to transform tile bounds in table's geometry CRS
-        if tms_epsg:
-            st_trans_expr = f"ST_Transform(bounds.geom, ST_SRID(t.{geometry_column}))"
-        else:
-            # When there is no EPSG code for the TileMatrixSet we have to use `ST_Transform(geom, in_proj, srid)`
-            st_trans_expr = (
-                f"ST_Transform(bounds.geom, {out_srid}, ST_SRID(t.{geometry_column}))"
-            )
+        tms_srid = tms.crs.to_epsg()
+        tms_proj = tms.crs.to_proj4()
 
         async with pool.acquire() as conn:
-            sql_query = f"""
+            sql_query = """
                 WITH
                 -- bounds (the tile envelope) in TMS's CRS (SRID)
-                bounds AS (
+                bounds_tmscrs AS (
                     SELECT
                         ST_Segmentize(
                             ST_MakeEnvelope(
@@ -147,38 +143,61 @@ class Table(Layer):
                                 :xmax,
                                 :ymax,
                                 -- If EPSG is null we set it to 0
-                                {tms_epsg or 0}
+                                coalesce(:tms_srid, 0)
                             ),
                             :seg_size
                         ) AS geom
                 ),
+                bounds_geomcrs AS (
+                    SELECT
+                        CASE WHEN coalesce(:tms_srid, 0) != 0 THEN
+                            ST_Transform(bounds_tmscrs.geom, :geometry_srid)
+                        ELSE
+                            ST_Transform(bounds_tmscrs.geom, :tms_proj, :geometry_srid)
+                        END as geom
+                    FROM bounds_tmscrs
+                ),
                 mvtgeom AS (
                     SELECT ST_AsMVTGeom(
-                        ST_Transform(t.{geometry_column}, {out_srid}),
-                        bounds.geom,
+                        CASE WHEN :tms_srid IS NOT NULL THEN
+                            ST_Transform(t.:geometry_column, :tms_srid)
+                        ELSE
+                            ST_Transform(t.:geometry_column, :tms_proj)
+                        END,
+                        bounds_tmscrs.geom,
                         :tile_resolution,
                         :tile_buffer
-                    ) AS geom, {colstring}
-                    FROM {self.id} t, bounds
+                    ) AS geom, :fields
+                    FROM :tablename t, bounds_tmscrs, bounds_geomcrs
                     -- Find where geometries intersect with input Tile
                     -- Intersects test is made in table geometry's CRS (e.g WGS84)
                     WHERE ST_Intersects(
-                        t.{geometry_column}, {st_trans_expr}
-                    ) {limitstr}
+                        t.:geometry_column, bounds_geomcrs.geom
+                    ) LIMIT :limit
                 )
                 SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
             """
 
-            return await conn.fetchval_b(
+            q, p = render(
                 sql_query,
+                tablename=V(self.id),
+                geometry_column=V(geometry_column),
+                fields=select_fields(*cols),
                 xmin=bbox.left,
                 ymin=bbox.bottom,
                 xmax=bbox.right,
                 ymax=bbox.top,
+                geometry_srid=funcs.cast(geometry_srid, "int"),
+                tms_proj=tms_proj,
+                tms_srid=int(tms_srid),
                 seg_size=segSize,
                 tile_resolution=int(resolution),
                 tile_buffer=int(buffer),
+                limit=int(limit),
             )
+            logging.debug(f"q: {q},p: {p}")
+
+            return await conn.fetchval(q, *p)
 
 
 class Function(Layer):

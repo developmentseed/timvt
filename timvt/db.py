@@ -77,6 +77,7 @@ async def table_index(db_pool: asyncpg.BuildPgPool) -> Sequence:
                         'schema', f_table_schema,
                         'table', f_table_name,
                         'geometry_column', f_geometry_column,
+                        'geometry_srid', srid,
                         'geometry_type', type,
                         'properties', coldict,
                         'bounds', bounds
