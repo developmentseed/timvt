@@ -1,11 +1,11 @@
 """timvt Metadata models."""
 
 import abc
-import logging
 from typing import Any, Dict, List, Optional
 
 import morecantile
-from buildpg import V, asyncpg, funcs, render, select_fields
+from buildpg import Var as pg_variable
+from buildpg import asyncpg, funcs, render, select_fields
 from pydantic import BaseModel, Field, root_validator
 
 from timvt.errors import MissingEPSGCode
@@ -16,8 +16,6 @@ from timvt.settings import (
     TILE_BUFFER,
     TILE_RESOLUTION,
 )
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 class Layer(BaseModel, metaclass=abc.ABCMeta):
@@ -180,8 +178,8 @@ class Table(Layer):
 
             q, p = render(
                 sql_query,
-                tablename=V(self.id),
-                geometry_column=V(geometry_column),
+                tablename=pg_variable(self.id),
+                geometry_column=pg_variable(geometry_column),
                 fields=select_fields(*cols),
                 xmin=bbox.left,
                 ymin=bbox.bottom,
@@ -189,13 +187,12 @@ class Table(Layer):
                 ymax=bbox.top,
                 geometry_srid=funcs.cast(geometry_srid, "int"),
                 tms_proj=tms_proj,
-                tms_srid=int(tms_srid),
+                tms_srid=tms_srid,
                 seg_size=segSize,
                 tile_resolution=int(resolution),
                 tile_buffer=int(buffer),
-                limit=int(limit),
+                limit=limit,
             )
-            logging.debug(f"q: {q},p: {p}")
 
             return await conn.fetchval(q, *p)
 
