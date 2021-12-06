@@ -7,6 +7,7 @@ import morecantile
 from buildpg import asyncpg
 from pydantic import BaseModel, Field, root_validator
 
+from timvt.errors import MissingEPSGCode
 from timvt.settings import (
     DEFAULT_MAXZOOM,
     DEFAULT_MINZOOM,
@@ -119,13 +120,24 @@ class Table(Layer):
 
         segSize = bbox.right - bbox.left
 
-        # use epsg or proj4
+        # Output TMS SRID (epsg code or proj4)
         tms_proj = f"'{tms.crs.to_proj4()}'::text"
-        out_proj = tms.crs.to_epsg() or tms_proj
+        tms_epsg = tms.crs.to_epsg()
+        out_srid = tms_epsg or tms_proj
+
+        # SQL Expression to transform tile bounds in table's geometry CRS
+        if tms_epsg:
+            st_trans_expr = f"ST_Transform(bounds.geom, ST_SRID(t.{geometry_column}))"
+        else:
+            # When there is no EPSG code for the TileMatrixSet we have to use `ST_Transform(geom, in_proj, srid)`
+            st_trans_expr = (
+                f"ST_Transform(bounds.geom, {out_srid}, ST_SRID(t.{geometry_column}))"
+            )
 
         async with pool.acquire() as conn:
             sql_query = f"""
                 WITH
+                -- bounds (the tile envelope) in TMS's CRS (SRID)
                 bounds AS (
                     SELECT
                         ST_Segmentize(
@@ -133,26 +145,30 @@ class Table(Layer):
                                 :xmin,
                                 :ymin,
                                 :xmax,
-                                :ymax
+                                :ymax,
+                                -- If EPSG is null we set it to 0
+                                {tms_epsg or 0}
                             ),
                             :seg_size
                         ) AS geom
                 ),
                 mvtgeom AS (
                     SELECT ST_AsMVTGeom(
-                        ST_Transform(t.{geometry_column}, {out_proj}),
+                        ST_Transform(t.{geometry_column}, {out_srid}),
                         bounds.geom,
                         :tile_resolution,
                         :tile_buffer
                     ) AS geom, {colstring}
                     FROM {self.id} t, bounds
+                    -- Find where geometries intersect with input Tile
+                    -- Intersects test is made in table geometry's CRS (e.g WGS84)
                     WHERE ST_Intersects(
-                        ST_Transform(t.{geometry_column}, 4326),
-                        ST_Transform(bounds.geom, {tms_proj}, 4326)
+                        t.{geometry_column}, {st_trans_expr}
                     ) {limitstr}
                 )
                 SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
             """
+
             return await conn.fetchval_b(
                 sql_query,
                 xmin=bbox.left,
@@ -210,6 +226,12 @@ class Function(Layer):
         **kwargs: Any,
     ):
         """Get Tile Data."""
+        # We only support TMS with valid EPSG code
+        if not tms.crs.to_epsg():
+            raise MissingEPSGCode(
+                f"{tms.identifier}'s CRS does not have a valid EPSG code."
+            )
+
         bbox = tms.xy_bounds(tile)
 
         async with pool.acquire() as conn:

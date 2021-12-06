@@ -10,17 +10,16 @@
     <script type="text/javascript" src="https://unpkg.com/leaflet.vectorgrid@1.2.0"></script>
     <script src="src/proj4-compressed.js"></script>
     <script src="src/proj4leaflet.js"></script>
-    <title>WorldCRS84Quad</title>
+    <title>EuropeanETRS89_LAEAQuad</title>
   </head>
   <body>
     <div id="map" class="map"></div>
-    
+
 	<script type="text/javascript">
 
-      var EPSG3031 = new L.Proj.CRS(
-        'EPSG:3031',
-        '+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 ' +
-        '+ellps=WGS84 +datum=WGS84 +units=m +no_defs', {
+      var EuropeanETRS89_LAEAQuad = new L.Proj.CRS(
+        'EPSG:3035',
+        '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs', {
         resolutions: [
           8192.0,
           4096.0,
@@ -32,7 +31,7 @@
       }
       );
 
-      var mapboxUrl = "http://0.0.0.0:8081/tiles/tiles/EPSG3031_250m/countries/{z}/{x}/{y}.pbf";
+      var mapboxUrl = "http://0.0.0.0:8081/tiles/EuropeanETRS89_LAEAQuad/public.countries/{z}/{x}/{y}.pbf";
 
       var mapboxVectorTileOptions = {
         rendererFactory: L.canvas.tile,
@@ -49,38 +48,16 @@
       };
 
       var map = L.map('map', {
-        center: [-90, 0],
-        zoom: 0,
-        maxZoom: 5,
-        crs: EPSG3031
+        center: [0, -20],
+        zoom: 2,
+        maxZoom: 10,
+        crs: EuropeanETRS89_LAEAQuad
       });
 
-      var template =
-        '//gibs-{s}.earthdata.nasa.gov/wmts/epsg3031/best/' +
-        '{layer}/default/{time}/{tileMatrixSet}/{z}/{y}/{x}.jpg';
-
-      var layer = L.tileLayer(template, {
-        layer: 'MODIS_Aqua_CorrectedReflectance_TrueColor',
-        tileMatrixSet: 'EPSG3031_250m',
-        format: 'image%2Fjpeg',
-        time: '2013-12-01',
-        tileSize: 256,
-        subdomains: 'abc',
-        noWrap: true,
-        continuousWorld: true,
-        attribution:
-          '<a href="https://wiki.earthdata.nasa.gov/display/GIBS">' +
-          'NASA EOSDIS GIBS</a>&nbsp;&nbsp;&nbsp;' +
-          '<a href="https://github.com/nasa-gibs/web-examples/blob/master/examples/leaflet/antarctic-epsg3031.js">' +
-          'View Source' +
-          '</a>'
-      });
-
-      map.addLayer(layer);
 
       L.vectorGrid.protobuf(mapboxUrl, mapboxVectorTileOptions).addTo(map)
 
     </script>
-  
+
   </body>
 </html>

@@ -12,7 +12,7 @@ inst_reqs = [
     # ref: https://github.com/tiangolo/fastapi/pull/3038, https://github.com/tiangolo/fastapi/issues/1870
     "fastapi>=0.65,<0.68",
     "jinja2>=2.11.2,<3.0.0",
-    "morecantile>=3.0,<3.1",
+    "morecantile>=3.0.2,<3.1",
     "starlette-cramjam>=0.1.0,<0.2",
     "importlib_resources>=1.1.0;python_version<'3.9'",
 ]
