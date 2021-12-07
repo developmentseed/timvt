@@ -29,12 +29,12 @@ jobs:
         run: sleep 60s
         shell: bash
 
-      - name: Check containers
-        run: docker ps -a
-
-      - name: Run siege
+      - name: Run siege (CRS84)
         run: |
           siege --file .github/workflows/data/urls_crs84.txt -b -c 20 -r 100 > /dev/null
+
+      - name: Run siege (WebMercator)
+        run: |
           siege --file .github/workflows/data/urls_mercator.txt -b -c 20 -r 100 > /dev/null
 
       - name: Stop containers
