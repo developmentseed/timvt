@@ -1,0 +1,42 @@
+name: benchmark
+
+# On every pull request, but only on push to master
+on:
+  push:
+    branches:
+    - master
+    tags:
+    - '*'
+  pull_request:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: install siege
+        run: |
+          sudo apt update
+          sudo apt install --yes siege
+
+      - name: Start containers
+        run: docker-compose -f "docker-compose.yml" up -d --build
+
+      # Let's wait a bit to make sure the docker are up
+      - name: Sleep for 60 seconds
+        run: sleep 60s
+        shell: bash
+
+      - name: Check containers
+        run: docker ps -a
+
+      - name: Run siege
+        run: |
+          siege --file .github/workflows/data/urls_crs84.txt -b -c 20 -r 100 > /dev/null
+          siege --file .github/workflows/data/urls_mercator.txt -b -c 20 -r 100 > /dev/null
+
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "docker-compose.yml" down
