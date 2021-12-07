@@ -10,7 +10,7 @@ on:
   pull_request:
 
 jobs:
-  tests:
+  benchmark:
     runs-on: ubuntu-latest
 
     steps:
