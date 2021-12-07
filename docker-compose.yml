@@ -16,11 +16,11 @@ services:
       - POSTGRES_PORT=5432
       - DEBUG=TRUE
     ports:
-      - "8081:8081"
+      - "${MY_DOCKER_IP:-127.0.0.1}:8081:8081"
     depends_on:
     - database
     command:
-      bash -c "bash /tmp/scripts/wait-for-it.sh database:5432 && uvicorn timvt.main:app --port 8081 --host 0.0.0.0"
+      bash -c "bash /tmp/scripts/wait-for-it.sh database:5432 && /start.sh"
     volumes:
       - ./scripts:/tmp/scripts
 

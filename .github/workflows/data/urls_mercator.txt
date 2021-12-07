@@ -1,5 +1,5 @@
 PROT=http
-HOST=0.0.0.0
+HOST=localhost
 PORT=8081
 PATH=tiles/public.countries/
 EXT=pbf
