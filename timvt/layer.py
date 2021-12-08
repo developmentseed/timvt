@@ -4,8 +4,9 @@ import abc
 from typing import Any, Dict, List, Optional
 
 import morecantile
+from buildpg import Func
 from buildpg import Var as pg_variable
-from buildpg import asyncpg, funcs, render, select_fields
+from buildpg import asyncpg, clauses, funcs, render, select_fields
 from pydantic import BaseModel, Field, root_validator
 
 from timvt.errors import MissingEPSGCode
@@ -253,22 +254,38 @@ class Function(Layer):
         async with pool.acquire() as conn:
             transaction = conn.transaction()
             await transaction.start()
+            # Register the custom function
             await conn.execute(self.sql)
 
-            function_params = ":xmin, :ymin, :xmax, :ymax, :epsg"
-            if kwargs:
-                params = ", ".join([f"{k} => {v}" for k, v in kwargs.items()])
-                function_params += f", {params}"
+            # TODO: parse kwargs
+            # we need to parse and cast arguments to match the defined values in the SQL function
 
-            content = await conn.fetchval_b(
-                f"SELECT {self.function_name}({function_params})",
+            # Build the query
+            sql_query = clauses.Select(
+                Func(
+                    self.function_name,
+                    ":xmin",
+                    ":ymin",
+                    ":xmax",
+                    ":ymax",
+                    ":epsg",
+                    *[f":{k}" for k in kwargs],
+                ),
+            )
+            q, p = render(
+                str(sql_query),
                 xmin=bbox.left,
                 ymin=bbox.bottom,
                 xmax=bbox.right,
                 ymax=bbox.top,
                 epsg=tms.crs.to_epsg(),
+                **kwargs,
             )
 
+            # execute the query
+            content = await conn.fetchval(q, *p)
+
+            # rollback
             await transaction.rollback()
 
         return content
