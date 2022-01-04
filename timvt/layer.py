@@ -1,6 +1,7 @@
 """timvt Metadata models."""
 
 import abc
+import json
 from typing import Any, Dict, List, Optional
 
 import morecantile
@@ -257,9 +258,6 @@ class Function(Layer):
             # Register the custom function
             await conn.execute(self.sql)
 
-            # TODO: parse kwargs
-            # we need to parse and cast arguments to match the defined values in the SQL function
-
             # Build the query
             sql_query = clauses.Select(
                 Func(
@@ -269,7 +267,7 @@ class Function(Layer):
                     ":xmax",
                     ":ymax",
                     ":epsg",
-                    *[f":{k}" for k in kwargs],
+                    ":query_params",
                 ),
             )
             q, p = render(
@@ -279,7 +277,7 @@ class Function(Layer):
                 xmax=bbox.right,
                 ymax=bbox.top,
                 epsg=tms.crs.to_epsg(),
-                **kwargs,
+                query_params=json.dumps(kwargs),
             )
 
             # execute the query
