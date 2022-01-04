@@ -29,11 +29,11 @@ jobs:
         run: sleep 60s
         shell: bash
 
-      - name: Run siege (CRS84)
+      - name: Run siege (EPSG:4326 - no reprojection)
         run: |
-          siege --file .github/workflows/data/urls_crs84.txt -b -c 20 -r 100 > /dev/null
+          siege --file .github/workflows/data/urls_epsg4326.txt -b -c 20 -r 100 > /dev/null
 
-      - name: Run siege (WebMercator)
+      - name: Run siege (WebMercator - default TMS)
         run: |
           siege --file .github/workflows/data/urls_mercator.txt -b -c 20 -r 100 > /dev/null
 
