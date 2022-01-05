@@ -15,7 +15,6 @@ DECLARE
     bbox_xmin float;
     bbox_ymin float;
     bounds geometry;
-    bounds_merc geometry;
     depth integer;
 BEGIN
     -- Find the bbox bounds
