@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION squares(
     ymax float,
     epsg integer,
     -- additional parameters
-    depth integer default 2
+    query_params json
 )
 RETURNS bytea AS $$
 DECLARE
@@ -15,7 +15,7 @@ DECLARE
     bbox_xmin float;
     bbox_ymin float;
     bounds geometry;
-    bounds_merc geometry;
+    depth integer;
 BEGIN
     -- Find the bbox bounds
     bounds := ST_MakeEnvelope(xmin, ymin, xmax, ymax, epsg);
@@ -26,6 +26,8 @@ BEGIN
 
     -- We want bbox divided up into depth*depth squares per bbox,
     -- so what is the width of a square?
+    depth := coalesce((query_params ->> 'depth')::int, 2);
+
     sq_width := (ST_XMax(bounds) - ST_XMin(bounds)) / depth;
 
     WITH mvtgeom AS (

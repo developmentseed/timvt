@@ -20,6 +20,7 @@ from timvt.resources.enums import MimeTypes
 
 from fastapi import APIRouter, Depends, Query
 
+from starlette.datastructures import QueryParams
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, Response
 from starlette.routing import NoMatchFound
@@ -39,6 +40,20 @@ TILE_RESPONSE_PARAMS: Dict[str, Any] = {
     "responses": {200: {"content": {"application/x-protobuf": {}}}},
     "response_class": Response,
 }
+
+
+def queryparams_to_kwargs(q: QueryParams, ignore_keys: List = []) -> Dict:
+    """Convert query params to dict."""
+    keys = list(q.keys())
+    values = {}
+    for k in keys:
+        if k in ignore_keys:
+            continue
+
+        v = q.getlist(k)
+        values[k] = v if len(v) > 1 else v[0]
+
+    return values
 
 
 @dataclass
@@ -107,15 +122,9 @@ class VectorTilerFactory:
             """Return vector tile."""
             pool = request.app.state.pool
 
-            qs_key_to_remove = ["tilematrixsetid"]
-            kwargs = dict(
-                [
-                    (key, value)
-                    for (key, value) in request.query_params._list
-                    if key.lower() not in qs_key_to_remove
-                ]
+            kwargs = queryparams_to_kwargs(
+                request.query_params, ignore_keys=["tilematrixsetid"]
             )
-
             content = await layer.get_tile(pool, tile, tms, **kwargs)
 
             return Response(bytes(content), media_type=MimeTypes.pbf.value)
@@ -156,13 +165,11 @@ class VectorTilerFactory:
             tile_endpoint = self.url_for(request, "tile", **path_params)
 
             qs_key_to_remove = ["tilematrixsetid", "minzoom", "maxzoom"]
-            query_params = dict(
-                [
-                    (key, value)
-                    for (key, value) in request.query_params._list
-                    if key.lower() not in qs_key_to_remove
-                ]
-            )
+            query_params = [
+                (key, value)
+                for (key, value) in request.query_params._list
+                if key.lower() not in qs_key_to_remove
+            ]
 
             if query_params:
                 tile_endpoint += f"?{urlencode(query_params)}"
