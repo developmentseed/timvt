@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.2.1 (2022-01-25)
+
+* update FastAPI version requirement to allow `>=0.73`
+
 ## 0.2.0 (2022-01-05)
 
 * Faster and cleaner SQL code
