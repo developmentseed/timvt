@@ -68,7 +68,7 @@ If you want more info about `ST_AsMVT` function or on the subject of creating Ve
 
 ### Configuration
 
-To be able to create Vector Tile, the application will need access to the PostGIS database. `TiMVT` uses [starlette](https://www.starlette.io/config/)'s configuration pattern which make use of environment variable and/or `.env` file to pass variable to the application.
+To be able to create Vector Tile, the application will need access to the PostGIS database. `TiMVT` uses [pydantic](https://pydantic-docs.helpmanual.io/usage/settings/)'s configuration pattern which make use of environment variable and/or `.env` file to pass variable to the application.
 
 Example of `.env` file can be found in [.env.example](https://github.com/developmentseed/timvt/blob/master/.env.example)
 ```

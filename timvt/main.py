@@ -1,8 +1,8 @@
 """TiVTiler app."""
 
-from timvt import settings
 from timvt.db import close_db_connection, connect_to_db
 from timvt.factory import TMSFactory, VectorTilerFactory
+from timvt.settings import ApiSettings
 from timvt.version import __version__ as timvt_version
 
 from fastapi import FastAPI, Request
@@ -19,22 +19,21 @@ except ImportError:
 
 
 templates = Jinja2Templates(directory=str(resources_files(__package__) / "templates"))  # type: ignore
-
+settings = ApiSettings()
 
 # Create TiVTiler Application.
 app = FastAPI(
-    title=settings.APP_NAME,
+    title=settings.name,
     description="A lightweight PostGIS vector tile server.",
     version=timvt_version,
-    debug=settings.DEBUG,
+    debug=settings.debug,
 )
 
 # Setup CORS.
-if settings.CORS_ORIGINS:
-    origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",")]
+if settings.cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=settings.cors_origins,
         allow_credentials=True,
         allow_methods=["GET"],
         allow_headers=["*"],

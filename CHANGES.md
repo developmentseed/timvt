@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.3.0 (2022-02-09)
+
+* update settings management from starlette to pydantic and use `TIMVT_` prefix (https://github.com/developmentseed/timvt/pull/76)
+
 ## 0.2.1 (2022-01-25)
 
 * update FastAPI version requirement to allow `>=0.73`

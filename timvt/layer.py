@@ -11,13 +11,9 @@ from buildpg import asyncpg, clauses, funcs, render, select_fields
 from pydantic import BaseModel, Field, root_validator
 
 from timvt.errors import MissingEPSGCode
-from timvt.settings import (
-    DEFAULT_MAXZOOM,
-    DEFAULT_MINZOOM,
-    MAX_FEATURES_PER_TILE,
-    TILE_BUFFER,
-    TILE_RESOLUTION,
-)
+from timvt.settings import TileSettings
+
+tile_settings = TileSettings()
 
 
 class Layer(BaseModel, metaclass=abc.ABCMeta):
@@ -34,8 +30,8 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
 
     id: str
     bounds: List[float] = [-180, -90, 180, 90]
-    minzoom: int = DEFAULT_MINZOOM
-    maxzoom: int = DEFAULT_MAXZOOM
+    minzoom: int = tile_settings.default_minzoom
+    maxzoom: int = tile_settings.default_maxzoom
     tileurl: Optional[str]
 
     @abc.abstractmethod
@@ -98,18 +94,20 @@ class Table(Layer):
         bbox = tms.xy_bounds(tile)
 
         limit = kwargs.get(
-            "limit", str(MAX_FEATURES_PER_TILE)
+            "limit", str(tile_settings.max_features_per_tile)
         )  # Number of features to write to a tile.
-        limit = min(int(limit), MAX_FEATURES_PER_TILE)
+        limit = min(int(limit), tile_settings.max_features_per_tile)
         if limit == -1:
-            limit = MAX_FEATURES_PER_TILE
+            limit = tile_settings.max_features_per_tile
 
         columns = kwargs.get(
             "columns"
         )  # Comma-seprated list of properties (column's name) to include in the tile
-        resolution = kwargs.get("resolution", str(TILE_RESOLUTION))  # Tile's resolution
+        resolution = kwargs.get(
+            "resolution", str(tile_settings.tile_resolution)
+        )  # Tile's resolution
         buffer = kwargs.get(
-            "buffer", str(TILE_BUFFER)
+            "buffer", str(tile_settings.tile_buffer)
         )  # Size of extra data to add for a tile.
 
         # create list of columns to return

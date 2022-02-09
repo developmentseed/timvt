@@ -5,15 +5,11 @@ from typing import Sequence
 
 from buildpg import asyncpg
 
-from timvt.settings import (
-    DATABASE_URL,
-    DB_MAX_CONN_SIZE,
-    DB_MAX_INACTIVE_CONN_LIFETIME,
-    DB_MAX_QUERIES,
-    DB_MIN_CONN_SIZE,
-)
+from timvt.settings import PostgresSettings
 
 from fastapi import FastAPI
+
+pg_settings = PostgresSettings()
 
 
 async def table_index(db_pool: asyncpg.BuildPgPool) -> Sequence:
@@ -95,11 +91,11 @@ async def table_index(db_pool: asyncpg.BuildPgPool) -> Sequence:
 async def connect_to_db(app: FastAPI) -> None:
     """Connect."""
     app.state.pool = await asyncpg.create_pool_b(
-        DATABASE_URL,
-        min_size=DB_MIN_CONN_SIZE,
-        max_size=DB_MAX_CONN_SIZE,
-        max_queries=DB_MAX_QUERIES,
-        max_inactive_connection_lifetime=DB_MAX_INACTIVE_CONN_LIFETIME,
+        pg_settings.database_url,
+        min_size=pg_settings.db_min_conn_size,
+        max_size=pg_settings.db_max_conn_size,
+        max_queries=pg_settings.db_max_queries,
+        max_inactive_connection_lifetime=pg_settings.db_max_inactive_conn_lifetime,
     )
     app.state.table_catalog = await table_index(app.state.pool)
 
