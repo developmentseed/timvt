@@ -2,7 +2,7 @@
 
 ## 0.3.0 (2022-02-09)
 
-* update settings management from starlette to pydantic and use `TIMVT_` prefix (https://github.com/developmentseed/timvt/pull/76)
+* update settings management from starlette to pydantic and use `TIMVT_` prefix
 
 ## 0.2.1 (2022-01-25)
 
