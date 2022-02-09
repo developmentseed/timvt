@@ -8,7 +8,7 @@ with open("README.md") as f:
 inst_reqs = [
     "asyncpg>=0.23.0",
     "buildpg>=0.3",
-    "fastapi>=0.65,!=0.68.0,!=0.68.1,!=0.68.2,!=0.69.0,!=0.70.0,!=0.70.1,!=0.71.0,!=0.72.0",
+    "fastapi>=0.73",
     "jinja2>=2.11.2,<4.0.0",
     "morecantile>=3.0.2,<3.1",
     "starlette-cramjam>=0.1.0,<0.2",
