@@ -87,12 +87,17 @@ DATABASE_URL=postgresql://username:password@0.0.0.0:5432/postgis
 ```python
 from timvt.db import close_db_connection, connect_to_db
 from timvt.factory import VectorTilerFactory
+from timvt.layer import FunctionRegistry
 from fastapi import FastAPI, Request
 
 # Create Application.
 app = FastAPI()
 
+# Add Function registry to the application state
+app.state.function_catalog = FunctionRegistry()
+
 # Register Start/Stop application event handler to setup/stop the database connection
+# and populate `app.state.table_catalog`
 @app.on_event("startup")
 async def startup_event():
     """Application startup: register the database connection and create table list."""

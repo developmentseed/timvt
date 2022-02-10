@@ -42,13 +42,12 @@ query_params = '{"v": ["2", "3"]}'
 
     `Functions` are not *hard coded* into the database but dynamically registered/unregistered by the application on each tile call.
 
-
 ## Minimal Application
 
 ```python
 from timvt.db import close_db_connection, connect_to_db
 from timvt.factory import VectorTilerFactory
-from timvt.functions import registry as FunctionRegistry
+from timvt.layer import FunctionRegistry
 from timvt.layer import Function
 
 from fastapi import FastAPI, Request
@@ -57,12 +56,15 @@ from fastapi import FastAPI, Request
 # Create FastAPI Application.
 app = FastAPI()
 
+# Add Function registery to the application state
+app.state.function_catalog = FunctionRegistry()
+
 # Register Start/Stop application event handler to setup/stop the database connection
+# and populate `app.state.table_catalog`
 @app.on_event("startup")
 async def startup_event():
     """Application startup: register the database connection and create table list."""
     await connect_to_db(app)
-
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -70,7 +72,7 @@ async def shutdown_event():
     await close_db_connection(app)
 
 # Register Function to the application internal registry
-FunctionRegistry.register(
+app.state.function_catalog.register(
     Function.from_file(
         id="squares",  # By default TiMVT will call a function call `squares`
         infile="my_sql_file.sql",  # PATH TO SQL FILE
@@ -86,6 +88,10 @@ mvt_tiler = VectorTilerFactory(
 app.include_router(mvt_tiler.router)
 ```
 
+!!! Important
+
+    A function `Registry` object (timvt.layer.FunctionRegistry) should be initialized and store within the application **state**. TiMVT assumes `app.state.function_catalog` is where the registry is.
+
 ## Function Options
 
 When registering a `Function`, the user can set different options:
@@ -99,49 +105,44 @@ When registering a `Function`, the user can set different options:
 - **options**: List of options available per function (this is for `documentation` only).
 
 ```python
-from timvt.functions import registry as FunctionRegistry
 from timvt.layer import Function
 
 
 # Function with Options
-FunctionRegistry.register(
-    Function(
-        id="squares2",
-        sql="""
-            CREATE FUNCTION squares_but_not_squares(
-                xmin float,
-                ymin float,
-                xmax float,
-                ymax float,
-                epsg integer,
-                query_params json
-            )
-            RETURNS bytea AS $$
-            ...
-        """,
-        function_name="squares_but_not_squares",  # This allows to call a specific function within the SQL code
-        bounds=[0.0, 0.0, 180.0, 90.0],  # overwrite default bounds
-        minzoom=9,  # overwrite default minzoom
-        maxzoom=24,  # overwrite default maxzoom
-        options={  # Provide arguments information for documentation
-            {"name": "depth", "default": 2}
-        }
-    )
+Function(
+    id="squares2",
+    sql="""
+        CREATE FUNCTION squares_but_not_squares(
+            xmin float,
+            ymin float,
+            xmax float,
+            ymax float,
+            epsg integer,
+            query_params json
+        )
+        RETURNS bytea AS $$
+        ...
+    """,
+    function_name="squares_but_not_squares",  # This allows to call a specific function within the SQL code
+    bounds=[0.0, 0.0, 180.0, 90.0],  # overwrite default bounds
+    minzoom=9,  # overwrite default minzoom
+    maxzoom=24,  # overwrite default maxzoom
+    options={  # Provide arguments information for documentation
+        {"name": "depth", "default": 2}
+    }
 )
 
 # Using `from_file` class method
-FunctionRegistry.register(
-    Function.from_file(
-        id="squares2",
-        infile="directory/my_sql_file.sql",  # PATH TO SQL FILE
-        function_name="squares_but_not_squares",  # This allows to call a specific function within the SQL code
-        bounds=[0.0, 0.0, 180.0, 90.0],  # overwrite default bounds
-        minzoom=9,  # overwrite default minzoom
-        maxzoom=24,  # overwrite default maxzoom
-        options={  # Provide arguments information for documentation
-            {"name": "depth", "default": 2}
-        }
-    )
+Function.from_file(
+    id="squares2",
+    infile="directory/my_sql_file.sql",  # PATH TO SQL FILE
+    function_name="squares_but_not_squares",  # This allows to call a specific function within the SQL code
+    bounds=[0.0, 0.0, 180.0, 90.0],  # overwrite default bounds
+    minzoom=9,  # overwrite default minzoom
+    maxzoom=24,  # overwrite default maxzoom
+    options={  # Provide arguments information for documentation
+        {"name": "depth", "default": 2}
+    }
 )
 ```
 
