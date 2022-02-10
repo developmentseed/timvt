@@ -41,7 +41,6 @@ jobs:
             --overwrite \
             timvt.settings \
             timvt.layer \
-            timvt.functions \
             timvt.factory \
             timvt.dependencies \
             timvt.db \
