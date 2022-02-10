@@ -20,7 +20,6 @@ nav:
     - dependencies: api/timvt/dependencies.md
     - factory: api/timvt/factory.md
     - layer: api/timvt/layer.md
-    - functions: api/timvt/functions.md
     - db: api/timvt/db.md
     - settings: api/timvt/settings.md
     - enums: api/timvt/resources/enums.md
