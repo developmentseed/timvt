@@ -1,8 +1,9 @@
-"""timvt Metadata models."""
+"""timvt models."""
 
 import abc
 import json
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any, ClassVar, Dict, List, Optional
 
 import morecantile
 from buildpg import Func
@@ -285,3 +286,21 @@ class Function(Layer):
             await transaction.rollback()
 
         return content
+
+
+@dataclass
+class FunctionRegistry:
+    """function registry"""
+
+    funcs: ClassVar[Dict[str, Function]] = {}
+
+    @classmethod
+    def get(cls, key: str):
+        """lookup function by name"""
+        return cls.funcs.get(key)
+
+    @classmethod
+    def register(cls, *args: Function):
+        """register function(s)"""
+        for func in args:
+            cls.funcs[func.id] = func

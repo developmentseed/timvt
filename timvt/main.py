@@ -2,6 +2,7 @@
 
 from timvt.db import close_db_connection, connect_to_db
 from timvt.factory import TMSFactory, VectorTilerFactory
+from timvt.layer import FunctionRegistry
 from timvt.settings import ApiSettings
 from timvt.version import __version__ as timvt_version
 
@@ -40,6 +41,9 @@ if settings.cors_origins:
     )
 
 app.add_middleware(CompressionMiddleware, minimum_size=0)
+
+# We add the function registry to the application state
+app.state.function_catalog = FunctionRegistry()
 
 
 # Register Start/Stop application event handler to setup/stop the database connection

@@ -35,12 +35,11 @@ def app(database_url, monkeypatch):
     monkeypatch.setenv("TIMVT_DEFAULT_MINZOOM", str(5))
     monkeypatch.setenv("TIMVT_DEFAULT_MAXZOOM", str(12))
 
-    from timvt.functions import registry as FunctionRegistry
     from timvt.layer import Function
     from timvt.main import app
 
     # Register Function to the internal registery
-    FunctionRegistry.register(
+    app.state.function_catalog.register(
         Function.from_file(
             id="squares",
             infile=os.path.join(DATA_DIR, "squares.sql"),
@@ -48,7 +47,7 @@ def app(database_url, monkeypatch):
     )
 
     # Register the same function but we different options
-    FunctionRegistry.register(
+    app.state.function_catalog.register(
         Function.from_file(
             id="squares2",
             infile=os.path.join(DATA_DIR, "squares.sql"),

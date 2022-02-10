@@ -12,7 +12,6 @@ from timvt.dependencies import (
     TileMatrixSetParams,
     TileParams,
 )
-from timvt.functions import registry as FunctionRegistry
 from timvt.layer import Function, Layer, Table
 from timvt.models.mapbox import TileJSON
 from timvt.models.OGC import TileMatrixSetList
@@ -257,7 +256,7 @@ class VectorTilerFactory:
 
             return [
                 Function(**func.dict(exclude_none=True), tileurl=_get_tiles_url(id))
-                for id, func in FunctionRegistry.funcs.items()
+                for id, func in request.app.state.function_catalog.funcs.items()
             ]
 
         @self.router.get(

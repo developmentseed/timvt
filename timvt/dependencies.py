@@ -5,7 +5,6 @@ from enum import Enum
 
 import morecantile
 
-from timvt.functions import registry as FunctionRegistry
 from timvt.layer import Layer, Table
 
 from fastapi import HTTPException, Path, Query
@@ -41,9 +40,15 @@ def LayerParams(
     layer: str = Path(..., description="Layer Name"),
 ) -> Layer:
     """Return Layer Object."""
-    func = FunctionRegistry.get(layer)
+    table_catalog = getattr(request.app.state, "table_catalog", [])
+    function_catalog = getattr(request.app.state, "function_catalog", {})
+
+    # Check function_catalog
+    func = function_catalog.get(layer)
     if func:
         return func
+
+    # Check table_catalog
     else:
         table_pattern = re.match(  # type: ignore
             r"^(?P<schema>.+)\.(?P<table>.+)$", layer
@@ -56,7 +61,7 @@ def LayerParams(
         assert table_pattern.groupdict()["schema"]
         assert table_pattern.groupdict()["table"]
 
-        for r in request.app.state.table_catalog:
+        for r in table_catalog:
             if r["id"] == layer:
                 return Table(**r)
 

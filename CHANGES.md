@@ -1,5 +1,10 @@
 # Release Notes
 
+## 0.4.0 (2022-02-10)
+
+* Refactor Function Registry to be hosted in the application state (`app.state.function_catalog) as the Table catalog.
+* move `timvt.function.Registry` to `timvt.layer.FunctionRegistry`
+
 ## 0.3.0 (2022-02-09)
 
 * update settings management from starlette to pydantic and use `TIMVT_` prefix
