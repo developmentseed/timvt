@@ -293,6 +293,8 @@ class VectorTilerFactory:
         async def demo(request: Request, layer=Depends(LayerParams)):
             """Demo for each table."""
             tile_url = self.url_for(request, "tilejson", layer=layer.id)
+            if request.query_params:
+                tile_url += f"?{request.query_params}"
 
             return templates.TemplateResponse(
                 name="viewer.html",

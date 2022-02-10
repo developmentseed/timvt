@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.4.1 (2022-02-10)
+
+* update viewer
+
 ## 0.4.0 (2022-02-10)
 
 * Refactor Function Registry to be hosted in the application state (`app.state.function_catalog) as the Table catalog.
