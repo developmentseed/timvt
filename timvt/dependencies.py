@@ -40,10 +40,8 @@ def LayerParams(
     layer: str = Path(..., description="Layer Name"),
 ) -> Layer:
     """Return Layer Object."""
-    table_catalog = getattr(request.app.state, "table_catalog", [])
-    function_catalog = getattr(request.app.state, "function_catalog", {})
-
     # Check function_catalog
+    function_catalog = getattr(request.app.state, "function_catalog", {})
     func = function_catalog.get(layer)
     if func:
         return func
@@ -61,6 +59,7 @@ def LayerParams(
         assert table_pattern.groupdict()["schema"]
         assert table_pattern.groupdict()["table"]
 
+        table_catalog = getattr(request.app.state, "table_catalog", [])
         for r in table_catalog:
             if r["id"] == layer:
                 return Table(**r)
