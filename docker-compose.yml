@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfiles/Dockerfile
     environment:
       - HOST=0.0.0.0
       - PORT=8081
@@ -20,14 +20,14 @@ services:
     depends_on:
     - database
     command:
-      bash -c "bash /tmp/scripts/wait-for-it.sh database:5432 && /start.sh"
+      bash -c "bash /tmp/scripts/wait-for-it.sh database:5432 --timeout=30 && /start.sh"
     volumes:
-      - ./scripts:/tmp/scripts
+      - ./dockerfiles/scripts:/tmp/scripts
 
   database:
     build:
       context: .
-      dockerfile: Dockerfile.db
+      dockerfile: dockerfiles/Dockerfile.db
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password

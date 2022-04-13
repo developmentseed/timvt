@@ -1,6 +1,9 @@
 site_name: timvt
 site_description: A lightweight PostGIS based dynamic vector tile server.
 
+docs_dir: 'src'
+site_dir: 'build'
+
 repo_name: "developmentseed/timvt"
 repo_url: "https://github.com/developmentseed/timvt"
 
@@ -38,7 +41,7 @@ theme:
   palette:
     primary: indigo
     scheme: default
-  custom_dir: 'docs/overrides'
+  custom_dir: 'src/overrides'
 
 # https://github.com/kylebarron/cogeo-mosaic/blob/mkdocs/mkdocs.yml#L50-L75
 markdown_extensions:

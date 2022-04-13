@@ -6,10 +6,10 @@ WORKDIR /tmp
 
 COPY README.md README.md
 COPY timvt/ timvt/
-COPY setup.py setup.py
+COPY pyproject.toml pyproject.toml
 
 RUN pip install . --no-cache-dir
-RUN rm -rf timvt/ README.md setup.py
+RUN rm -rf timvt/ README.md pyproject.toml
 
 ENV MODULE_NAME timvt.main
 ENV VARIABLE_NAME app
