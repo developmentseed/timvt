@@ -196,7 +196,7 @@ class VectorTilerFactory:
         async def tables_index(request: Request):
             """Index of tables."""
 
-            def _get_tiles_url(id) -> str:
+            def _get_tiles_url(id) -> Optional[str]:
                 try:
                     return self.url_for(
                         request, "tile", layer=id, z="{z}", x="{x}", y="{y}"
@@ -222,7 +222,7 @@ class VectorTilerFactory:
         ):
             """Return table metadata."""
 
-            def _get_tiles_url(id) -> str:
+            def _get_tiles_url(id) -> Optional[str]:
                 try:
                     return self.url_for(
                         request, "tile", layer=id, z="{z}", x="{x}", y="{y}"
@@ -246,7 +246,7 @@ class VectorTilerFactory:
         async def functions_index(request: Request):
             """Index of functions."""
 
-            def _get_tiles_url(id) -> str:
+            def _get_tiles_url(id) -> Optional[str]:
                 try:
                     return self.url_for(
                         request, "tile", layer=id, z="{z}", x="{x}", y="{y}"
@@ -273,7 +273,7 @@ class VectorTilerFactory:
         ):
             """Return table metadata."""
 
-            def _get_tiles_url(id) -> str:
+            def _get_tiles_url(id) -> Optional[str]:
                 try:
                     return self.url_for(
                         request, "tile", layer=id, z="{z}", x="{x}", y="{y}"

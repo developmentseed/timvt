@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.5.0 (2022-04-13)
+
+* switch to `pyproject.toml` and repo cleanup
+
 ## 0.4.1 (2022-02-10)
 
 * update viewer
