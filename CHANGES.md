@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.6.0 (2022-04-14)
+
+* update `morecantile` requirement to `>3.1,=<4.0`
+
 ## 0.5.0 (2022-04-13)
 
 * switch to `pyproject.toml` and repo cleanup
