@@ -34,7 +34,6 @@ except ImportError:
 
 templates = Jinja2Templates(directory=str(resources_files(__package__) / "templates"))  # type: ignore
 
-
 TILE_RESPONSE_PARAMS: Dict[str, Any] = {
     "responses": {200: {"content": {"application/x-protobuf": {}}}},
     "response_class": Response,
@@ -53,6 +52,11 @@ def queryparams_to_kwargs(q: QueryParams, ignore_keys: List = []) -> Dict:
         values[k] = v if len(v) > 1 else v[0]
 
     return values
+
+
+def _first_value(values: List[Any], default: Any = None):
+    """Return the first not None value."""
+    return next(filter(lambda x: x is not None, values), default)
 
 
 @dataclass
@@ -105,10 +109,24 @@ class VectorTilerFactory:
         """Register /tiles endpoints."""
 
         @self.router.get(
-            "/tiles/{layer}/{z}/{x}/{y}.pbf", **TILE_RESPONSE_PARAMS, tags=["Tiles"]
+            "/tiles/{layer}/{z}/{x}/{y}.pbf",
+            **TILE_RESPONSE_PARAMS,
+            tags=["Tiles"],
+            deprecated=True,
         )
         @self.router.get(
             "/tiles/{TileMatrixSetId}/{layer}/{z}/{x}/{y}.pbf",
+            **TILE_RESPONSE_PARAMS,
+            tags=["Tiles"],
+            deprecated=True,
+        )
+        @self.router.get(
+            "/tiles/{layer}/{z}/{x}/{y}",
+            **TILE_RESPONSE_PARAMS,
+            tags=["Tiles"],
+        )
+        @self.router.get(
+            "/tiles/{TileMatrixSetId}/{layer}/{z}/{x}/{y}",
             **TILE_RESPONSE_PARAMS,
             tags=["Tiles"],
         )
@@ -173,8 +191,13 @@ class VectorTilerFactory:
             if query_params:
                 tile_endpoint += f"?{urlencode(query_params)}"
 
-            minzoom = minzoom if minzoom is not None else (layer.minzoom or tms.minzoom)
-            maxzoom = maxzoom if maxzoom is not None else (layer.maxzoom or tms.maxzoom)
+            # Get Min/Max zoom from layer settings if tms is the default tms
+            if tms.identifier == layer.default_tms:
+                minzoom = _first_value([minzoom, layer.minzoom])
+                maxzoom = _first_value([maxzoom, layer.maxzoom])
+
+            minzoom = minzoom if minzoom is not None else tms.minzoom
+            maxzoom = maxzoom if maxzoom is not None else tms.maxzoom
 
             return {
                 "minzoom": minzoom,

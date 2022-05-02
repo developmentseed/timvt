@@ -1,5 +1,14 @@
 # Release Notes
 
+## Unreleased
+
+* update database settings input
+* add `default_tms` in Layer definition to specify the Min/Max zoom TileMatrixSet
+
+**breaking changes**
+
+* deprecating the use of `.pbf` in tile's path
+
 ## 0.6.0 (2022-04-14)
 
 * update `morecantile` requirement to `>3.1,=<4.0`

@@ -1,7 +1,7 @@
 """TiVTiler app."""
 
 from timvt import __version__ as timvt_version
-from timvt.db import close_db_connection, connect_to_db
+from timvt.db import close_db_connection, connect_to_db, register_table_catalog
 from timvt.factory import TMSFactory, VectorTilerFactory
 from timvt.layer import FunctionRegistry
 from timvt.settings import ApiSettings
@@ -51,6 +51,7 @@ app.state.function_catalog = FunctionRegistry()
 async def startup_event():
     """Application startup: register the database connection and create table list."""
     await connect_to_db(app)
+    await register_table_catalog(app)
 
 
 @app.on_event("shutdown")
