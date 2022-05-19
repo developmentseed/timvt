@@ -3,36 +3,41 @@
 import re
 from enum import Enum
 
-import morecantile
+from morecantile import Tile, TileMatrixSet, tms
 
 from timvt.layer import Layer, Table
+from timvt.settings import TileSettings
 
 from fastapi import HTTPException, Path, Query
 
 from starlette.requests import Request
 
+tile_settings = TileSettings()
+
 TileMatrixSetNames = Enum(  # type: ignore
-    "TileMatrixSetNames", [(a, a) for a in sorted(morecantile.tms.list())]
+    "TileMatrixSetNames", [(a, a) for a in sorted(tms.list())]
 )
+
+default_tms = TileMatrixSetNames[tile_settings.default_tms]
 
 
 def TileMatrixSetParams(
     TileMatrixSetId: TileMatrixSetNames = Query(
-        TileMatrixSetNames.WebMercatorQuad,  # type: ignore
-        description="TileMatrixSet Name (default: 'WebMercatorQuad')",
+        default_tms,
+        description=f"TileMatrixSet Name (default: '{tile_settings.default_tms}')",
     ),
-) -> morecantile.TileMatrixSet:
+) -> TileMatrixSet:
     """TileMatrixSet parameters."""
-    return morecantile.tms.get(TileMatrixSetId.name)
+    return tms.get(TileMatrixSetId.name)
 
 
 def TileParams(
     z: int = Path(..., ge=0, le=30, description="Tiles's zoom level"),
     x: int = Path(..., description="Tiles's column"),
     y: int = Path(..., description="Tiles's row"),
-) -> morecantile.Tile:
+) -> Tile:
     """Tile parameters."""
-    return morecantile.Tile(x, y, z)
+    return Tile(x, y, z)
 
 
 def LayerParams(

@@ -25,6 +25,7 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
         bounds (list): Layer's bounds (left, bottom, right, top).
         minzoom (int): Layer's min zoom level.
         maxzoom (int): Layer's max zoom level.
+        default_tms (str): TileMatrixSet name for the min/max zoom.
         tileurl (str, optional): Layer's tiles url.
 
     """
@@ -33,6 +34,7 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
     bounds: List[float] = [-180, -90, 180, 90]
     minzoom: int = tile_settings.default_minzoom
     maxzoom: int = tile_settings.default_maxzoom
+    default_tms: str = tile_settings.default_tms
     tileurl: Optional[str]
 
     @abc.abstractmethod

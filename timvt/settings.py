@@ -49,6 +49,7 @@ class _TileSettings(pydantic.BaseSettings):
     tile_resolution: int = 4096
     tile_buffer: int = 256
     max_features_per_tile: int = 10000
+    default_tms: str = "WebMercatorQuad"
     default_minzoom: int = 0
     default_maxzoom: int = 22
 
@@ -65,7 +66,7 @@ def TileSettings() -> _TileSettings:
     return _TileSettings()
 
 
-class _PostgresSettings(pydantic.BaseSettings):
+class PostgresSettings(pydantic.BaseSettings):
     """Postgres-specific API settings.
 
     Attributes:
@@ -97,6 +98,7 @@ class _PostgresSettings(pydantic.BaseSettings):
     # https://github.com/tiangolo/full-stack-fastapi-postgresql/blob/master/%7B%7Bcookiecutter.project_slug%7D%7D/backend/app/app/core/config.py#L42
     @pydantic.validator("database_url", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+        """Validate database config."""
         if isinstance(v, str):
             return v
 
@@ -108,16 +110,3 @@ class _PostgresSettings(pydantic.BaseSettings):
             port=values.get("postgres_port", 5432),
             path=f"/{values.get('postgres_dbname') or ''}",
         )
-
-
-@lru_cache()
-def PostgresSettings() -> _PostgresSettings:
-    """
-    This function returns a cached instance of the APISettings object.
-    Caching is used to prevent re-reading the environment every time the API settings are used in an endpoint.
-    If you want to change an environment variable and reset the cache (e.g., during testing), this can be done
-    using the `lru_cache` instance method `get_api_settings.cache_clear()`.
-
-    From https://github.com/dmontagu/fastapi-utils/blob/af95ff4a8195caaa9edaa3dbd5b6eeb09691d9c7/fastapi_utils/api_settings.py#L60-L69
-    """
-    return _PostgresSettings()

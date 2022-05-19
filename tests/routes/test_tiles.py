@@ -40,12 +40,12 @@ def test_tilejson(app):
 
 def test_tile(app):
     """request a tile."""
-    response = app.get("/tiles/public.landsat_wrs/0/0/0.pbf")
+    response = app.get("/tiles/public.landsat_wrs/0/0/0")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) == 10000
 
-    response = app.get("/tiles/public.landsat_wrs/0/0/0.pbf?limit=1000")
+    response = app.get("/tiles/public.landsat_wrs/0/0/0?limit=1000")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) == 1000
@@ -53,9 +53,7 @@ def test_tile(app):
         decoded["default"]["features"][0]["properties"]
     )
 
-    response = app.get(
-        "/tiles/public.landsat_wrs/0/0/0.pbf?limit=1&columns=pr,row,path"
-    )
+    response = app.get("/tiles/public.landsat_wrs/0/0/0?limit=1&columns=pr,row,path")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert ["pr", "row", "path"] == list(
@@ -65,12 +63,12 @@ def test_tile(app):
 
 def test_tile_tms(app):
     """request a tile with specific TMS."""
-    response = app.get("/tiles/WorldCRS84Quad/public.landsat_wrs/0/0/0.pbf")
+    response = app.get("/tiles/WorldCRS84Quad/public.landsat_wrs/0/0/0")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) > 1000
 
-    response = app.get("/tiles/WorldCRS84Quad/public.landsat_wrs/0/0/0.pbf?limit=1000")
+    response = app.get("/tiles/WorldCRS84Quad/public.landsat_wrs/0/0/0?limit=1000")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) <= 1000
@@ -79,7 +77,7 @@ def test_tile_tms(app):
     )
 
     response = app.get(
-        "/tiles/WorldCRS84Quad/public.landsat_wrs/0/0/0.pbf?limit=1&columns=pr,row,path"
+        "/tiles/WorldCRS84Quad/public.landsat_wrs/0/0/0?limit=1&columns=pr,row,path"
     )
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
@@ -116,12 +114,12 @@ def test_function_tilejson(app):
 
 def test_function_tile(app):
     """request a tile."""
-    response = app.get("/tiles/squares/0/0/0.pbf")
+    response = app.get("/tiles/squares/0/0/0")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) == 4
 
-    response = app.get("/tiles/squares/0/0/0.pbf?depth=4")
+    response = app.get("/tiles/squares/0/0/0?depth=4")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) == 16

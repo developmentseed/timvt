@@ -1,15 +1,13 @@
 """timvt.db: database events."""
 
 import json
-from typing import Sequence
+from typing import Optional, Sequence
 
 from buildpg import asyncpg
 
 from timvt.settings import PostgresSettings
 
 from fastapi import FastAPI
-
-pg_settings = PostgresSettings()
 
 
 async def table_index(db_pool: asyncpg.BuildPgPool) -> Sequence:
@@ -88,15 +86,24 @@ async def table_index(db_pool: asyncpg.BuildPgPool) -> Sequence:
     return json.loads(content)
 
 
-async def connect_to_db(app: FastAPI) -> None:
+async def connect_to_db(
+    app: FastAPI, settings: Optional[PostgresSettings] = None
+) -> None:
     """Connect."""
+    if not settings:
+        settings = PostgresSettings()
+
     app.state.pool = await asyncpg.create_pool_b(
-        pg_settings.database_url,
-        min_size=pg_settings.db_min_conn_size,
-        max_size=pg_settings.db_max_conn_size,
-        max_queries=pg_settings.db_max_queries,
-        max_inactive_connection_lifetime=pg_settings.db_max_inactive_conn_lifetime,
+        settings.database_url,
+        min_size=settings.db_min_conn_size,
+        max_size=settings.db_max_conn_size,
+        max_queries=settings.db_max_queries,
+        max_inactive_connection_lifetime=settings.db_max_inactive_conn_lifetime,
     )
+
+
+async def register_table_catalog(app: FastAPI) -> None:
+    """Register Table catalog."""
     app.state.table_catalog = await table_index(app.state.pool)
 
 
