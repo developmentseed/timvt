@@ -101,3 +101,9 @@ no_strict_optional = "True"
 [tool.pydocstyle]
 select = "D1"
 match = "(?!test).*.py"
+
+[tool.poetry]
+name = "timvt"
+version = "0.0.1"
+description = ""
+authors = ["Vincent Sarago <vincent@developmentseed.org>"]
