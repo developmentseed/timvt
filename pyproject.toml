@@ -37,6 +37,7 @@ test = [
     "psycopg2",
     "pytest-pgsql",
     "mapbox-vector-tile",
+    "protobuf>=3.0,<4.0",
     "numpy",
 ]
 dev = [
