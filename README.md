@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/10407788/106793743-d5b27e80-6625-11eb-924a-77c54abff993.jpg"/>
+  <img width="500" src="https://user-images.githubusercontent.com/10407788/172734314-a2b47e51-b919-4aa3-a7cf-33e57f3c2852.png"/>
   <p align="center">A lightweight PostGIS based dynamic vector tile server.</p>
 </p>
 

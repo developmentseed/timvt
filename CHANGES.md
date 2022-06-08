@@ -4,6 +4,7 @@
 
 * update database settings input
 * add `default_tms` in Layer definition to specify the Min/Max zoom TileMatrixSet
+* update `starlette-cramjam` requirement
 
 **breaking changes**
 
