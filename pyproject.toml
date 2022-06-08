@@ -24,7 +24,7 @@ dependencies = [
     "fastapi>=0.73",
     "jinja2>=2.11.2,<4.0.0",
     "morecantile>=3.1,<4.0",
-    "starlette-cramjam>=0.1.0,<0.2",
+    "starlette-cramjam>=0.3,<0.4",
     "importlib_resources>=1.1.0; python_version < '3.9'",
 ]
 
@@ -37,6 +37,7 @@ test = [
     "psycopg2",
     "pytest-pgsql",
     "mapbox-vector-tile",
+    "protobuf>=3.0,<4.0",
     "numpy",
 ]
 dev = [
