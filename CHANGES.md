@@ -1,6 +1,6 @@
 # Release Notes
 
-## Unreleased
+## 0.7.0 (2022-06-09)
 
 * update database settings input
 * add `default_tms` in Layer definition to specify the Min/Max zoom TileMatrixSet
