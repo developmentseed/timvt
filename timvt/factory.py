@@ -228,7 +228,7 @@ class VectorTilerFactory:
                     return None
 
             return [
-                Table(**r, tileurl=_get_tiles_url(r["id"]))
+                Table(**r.dict(by_alias=True), tileurl=_get_tiles_url(r.id))
                 for r in request.app.state.table_catalog
             ]
 

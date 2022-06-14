@@ -49,15 +49,15 @@ def test_tile(app):
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) == 1000
-    assert ["id", "pr", "row", "path", "ogc_fid"] == list(
-        decoded["default"]["features"][0]["properties"]
+    assert sorted(["id", "pr", "row", "path", "ogc_fid"]) == sorted(
+        list(decoded["default"]["features"][0]["properties"])
     )
 
     response = app.get("/tiles/public.landsat_wrs/0/0/0?limit=1&columns=pr,row,path")
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
-    assert ["pr", "row", "path"] == list(
-        decoded["default"]["features"][0]["properties"]
+    assert sorted(["pr", "row", "path"]) == sorted(
+        list(decoded["default"]["features"][0]["properties"])
     )
 
 
@@ -72,8 +72,8 @@ def test_tile_tms(app):
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
     assert len(decoded["default"]["features"]) <= 1000
-    assert ["id", "pr", "row", "path", "ogc_fid"] == list(
-        decoded["default"]["features"][0]["properties"]
+    assert sorted(["id", "pr", "row", "path", "ogc_fid"]) == sorted(
+        list(decoded["default"]["features"][0]["properties"])
     )
 
     response = app.get(
@@ -81,8 +81,8 @@ def test_tile_tms(app):
     )
     assert response.status_code == 200
     decoded = mapbox_vector_tile.decode(response.content)
-    assert ["pr", "row", "path"] == list(
-        decoded["default"]["features"][0]["properties"]
+    assert sorted(["pr", "row", "path"]) == sorted(
+        list(decoded["default"]["features"][0]["properties"])
     )
 
 
