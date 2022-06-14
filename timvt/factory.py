@@ -109,18 +109,6 @@ class VectorTilerFactory:
         """Register /tiles endpoints."""
 
         @self.router.get(
-            "/tiles/{layer}/{z}/{x}/{y}.pbf",
-            **TILE_RESPONSE_PARAMS,
-            tags=["Tiles"],
-            deprecated=True,
-        )
-        @self.router.get(
-            "/tiles/{TileMatrixSetId}/{layer}/{z}/{x}/{y}.pbf",
-            **TILE_RESPONSE_PARAMS,
-            tags=["Tiles"],
-            deprecated=True,
-        )
-        @self.router.get(
             "/tiles/{layer}/{z}/{x}/{y}",
             **TILE_RESPONSE_PARAMS,
             tags=["Tiles"],
