@@ -1,5 +1,9 @@
 # Release Notes
 
+## Next (TBD)
+
+* remove `.pbf` extension in tiles endpoints
+
 ## 0.7.0 (2022-06-09)
 
 * update database settings input
