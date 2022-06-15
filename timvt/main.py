@@ -75,9 +75,10 @@ app.include_router(tms.router, tags=["TileMatrixSets"])
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def index(request: Request):
     """DEMO."""
+    table_catalog = getattr(request.app.state, "table_catalog", {})
     return templates.TemplateResponse(
         name="index.html",
-        context={"index": request.app.state.table_catalog, "request": request},
+        context={"index": table_catalog.values(), "request": request},
         media_type="text/html",
     )
 

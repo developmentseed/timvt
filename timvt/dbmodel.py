@@ -81,14 +81,7 @@ class Table(BaseModel):
         return cols
 
 
-class Database(BaseModel):
-    """Keyed tables for a Database."""
-
-    tables: Dict[str, Any]
-
-    def __iter__(self):
-        """iterate over features"""
-        return iter(self.tables.values())
+Database = Dict[str, Dict[str, Any]]
 
 
 async def get_table_index(
@@ -195,8 +188,8 @@ async def get_table_index(
         )
         SELECT
                 id,
-                schemaname as dbschema,
-                tablename as tablename,
+                schemaname as schema,
+                tablename as table,
                 geometry_columns,
                 pk as id_col,
                 columns as properties,
@@ -210,15 +203,4 @@ async def get_table_index(
         rows = await conn.fetch_b(
             query, schemas=schemas, tables=tables, spatial=spatial
         )
-        d = {}
-        for row in rows:
-            d[row["id"]] = dict(
-                id=row[0],
-                schema=row[1],
-                table=row[2],
-                geometry_columns=row[3],
-                id_col=row[4],
-                properties=row[5],
-                description=row[6],
-            )
-    return Database(tables=d)
+        return {row["id"]: dict(row) for row in rows}

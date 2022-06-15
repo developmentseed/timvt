@@ -215,9 +215,10 @@ class VectorTilerFactory:
                 except NoMatchFound:
                     return None
 
+            table_catalog = getattr(request.app.state, "table_catalog", {})
             return [
-                Table(**r, tileurl=_get_tiles_url(r["id"]))
-                for r in request.app.state.table_catalog
+                Table(**table_info, tileurl=_get_tiles_url(table_id))
+                for table_id, table_info in table_catalog.items()
             ]
 
         @self.router.get(
