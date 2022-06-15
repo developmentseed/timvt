@@ -71,11 +71,12 @@ class Table(Layer, DBTable):
         maxzoom (int): Layer's max zoom level.
         tileurl (str, optional): Layer's tiles url.
         type (str): Layer's type.
+        table (str): Table's name.
         schema (str): Table's database schema (e.g public).
-        geometry_type (str): Table's geometry type (e.g polygon).
-        srid (int): Table's SRID
-        geometry_column (str): Name of the geomtry column in the table.
-        properties (Dict): Properties available in the table.
+        description (str): Table's description.
+        id_column (str): name of id column
+        geometry_columns (list): List of geometry columns.
+        properties (list): List of property columns.
 
     """
 
@@ -269,7 +270,7 @@ class Function(Layer):
                     ":xmax",
                     ":ymax",
                     ":epsg",
-                    ":query_params",
+                    ":query_params::text::json",
                 ),
             )
             q, p = render(

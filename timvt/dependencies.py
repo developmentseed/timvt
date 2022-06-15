@@ -64,9 +64,8 @@ def LayerParams(
         assert table_pattern.groupdict()["schema"]
         assert table_pattern.groupdict()["table"]
 
-        table_catalog = getattr(request.app.state, "table_catalog", [])
-        for r in table_catalog:
-            if r.id == layer:
-                return Table(**r.dict(by_alias=True))
+        table_catalog = getattr(request.app.state, "table_catalog", {})
+        if layer in table_catalog:
+            return Table(**table_catalog[layer])
 
     raise HTTPException(status_code=404, detail=f"Table/Function '{layer}' not found.")
