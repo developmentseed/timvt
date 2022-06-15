@@ -270,7 +270,7 @@ class Function(Layer):
                     ":xmax",
                     ":ymax",
                     ":epsg",
-                    ":query_params",
+                    ":query_params::text::json",
                 ),
             )
             q, p = render(
