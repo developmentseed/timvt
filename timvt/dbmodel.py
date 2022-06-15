@@ -188,8 +188,8 @@ async def get_table_index(
         )
         SELECT
                 id,
-                schemaname as schema,
-                tablename as table,
+                schemaname as dbschema,
+                tablename as tablename,
                 geometry_columns,
                 pk as id_col,
                 columns as properties,
@@ -203,4 +203,13 @@ async def get_table_index(
         rows = await conn.fetch_b(
             query, schemas=schemas, tables=tables, spatial=spatial
         )
-        return {row["id"]: dict(row) for row in rows}
+        keys = [
+            "id",
+            "schema",
+            "table",
+            "geometry_columns",
+            "id_col",
+            "properties",
+            "description",
+        ]
+        return {row["id"]: dict(zip(keys, tuple(row))) for row in rows}
