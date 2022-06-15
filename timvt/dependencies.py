@@ -66,7 +66,7 @@ def LayerParams(
 
         table_catalog = getattr(request.app.state, "table_catalog", [])
         for r in table_catalog:
-            if r.id == layer:
-                return Table(**r.dict(by_alias=True))
+            if r["id"] == layer:
+                return Table(**r)
 
     raise HTTPException(status_code=404, detail=f"Table/Function '{layer}' not found.")

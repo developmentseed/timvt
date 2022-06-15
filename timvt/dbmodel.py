@@ -1,6 +1,6 @@
 """timvt.db: database events."""
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from buildpg import asyncpg
 from pydantic import BaseModel, Field
@@ -84,19 +84,11 @@ class Table(BaseModel):
 class Database(BaseModel):
     """Keyed tables for a Database."""
 
-    tables: Dict[str, Table]
+    tables: Dict[str, Any]
 
     def __iter__(self):
         """iterate over features"""
         return iter(self.tables.values())
-
-    def __len__(self):
-        """return features length"""
-        return len(self.tables)
-
-    def __getitem__(self, key):
-        """get table at a given key"""
-        return self.tables[key]
 
 
 async def get_table_index(
@@ -220,7 +212,7 @@ async def get_table_index(
         )
         d = {}
         for row in rows:
-            d[row["id"]] = Table(
+            d[row["id"]] = dict(
                 id=row[0],
                 schema=row[1],
                 table=row[2],
