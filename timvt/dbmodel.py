@@ -208,7 +208,7 @@ async def get_table_index(
             "schema",
             "table",
             "geometry_columns",
-            "id_col",
+            "id_column",
             "properties",
             "description",
         ]
