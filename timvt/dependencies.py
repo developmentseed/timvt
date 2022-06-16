@@ -45,8 +45,8 @@ def LayerParams(
     layer: str = Path(..., description="Layer Name"),
 ) -> Layer:
     """Return Layer Object."""
-    # Check function_catalog
-    function_catalog = getattr(request.app.state, "function_catalog", {})
+    # Check timvt_function_catalog
+    function_catalog = getattr(request.app.state, "timvt_function_catalog", {})
     func = function_catalog.get(layer)
     if func:
         return func
@@ -64,9 +64,8 @@ def LayerParams(
         assert table_pattern.groupdict()["schema"]
         assert table_pattern.groupdict()["table"]
 
-        table_catalog = getattr(request.app.state, "table_catalog", [])
-        for r in table_catalog:
-            if r["id"] == layer:
-                return Table(**r)
+        table_catalog = getattr(request.app.state, "table_catalog", {})
+        if layer in table_catalog:
+            return Table(**table_catalog[layer])
 
     raise HTTPException(status_code=404, detail=f"Table/Function '{layer}' not found.")

@@ -7,7 +7,13 @@ Issues and pull requests are more than welcome: https://github.com/developmentse
 ```bash
 $ git clone https://github.com/developmentseed/timvt.git
 $ cd timvt
-$ pip install -e .[dev]
+$ pip install -e .["test,dev"]
+```
+
+You can then run the tests with the following command:
+
+```sh
+python -m pytest --cov timvt --cov-report term-missing
 ```
 
 **pre-commit**

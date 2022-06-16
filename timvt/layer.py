@@ -9,8 +9,9 @@ import morecantile
 from buildpg import Func
 from buildpg import Var as pg_variable
 from buildpg import asyncpg, clauses, funcs, render, select_fields
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, root_validator
 
+from timvt.dbmodel import Table as DBTable
 from timvt.errors import MissingEPSGCode
 from timvt.settings import TileSettings
 
@@ -60,7 +61,7 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
         ...
 
 
-class Table(Layer):
+class Table(Layer, DBTable):
     """Table Reader.
 
     Attributes:
@@ -70,21 +71,24 @@ class Table(Layer):
         maxzoom (int): Layer's max zoom level.
         tileurl (str, optional): Layer's tiles url.
         type (str): Layer's type.
+        table (str): Table's name.
         schema (str): Table's database schema (e.g public).
-        geometry_type (str): Table's geometry type (e.g polygon).
-        srid (int): Table's SRID
-        geometry_column (str): Name of the geomtry column in the table.
-        properties (Dict): Properties available in the table.
+        description (str): Table's description.
+        id_column (str): name of id column
+        geometry_columns (list): List of geometry columns.
+        properties (list): List of property columns.
 
     """
 
     type: str = "Table"
-    dbschema: str = Field(..., alias="schema")
-    table: str
-    geometry_type: str
-    geometry_column: str
-    geometry_srid: int
-    properties: Dict[str, str]
+
+    @root_validator
+    def bounds_default(cls, values):
+        """Get default bounds from the first geometry columns."""
+        geoms = values.get("geometry_columns")
+        if geoms:
+            values["bounds"] = geoms[0].bounds
+        return values
 
     async def get_tile(
         self,
@@ -104,7 +108,7 @@ class Table(Layer):
             limit = tile_settings.max_features_per_tile
 
         columns = kwargs.get(
-            "columns"
+            "columns",
         )  # Comma-seprated list of properties (column's name) to include in the tile
         resolution = kwargs.get(
             "resolution", str(tile_settings.tile_resolution)
@@ -113,18 +117,16 @@ class Table(Layer):
             "buffer", str(tile_settings.tile_buffer)
         )  # Size of extra data to add for a tile.
 
-        # create list of columns to return
-        geometry_column = self.geometry_column
-        geometry_srid = self.geometry_srid
-        cols = self.properties
-        if geometry_column in cols:
-            del cols[geometry_column]
+        geometry_column = self.geometry_column(kwargs.get("geom"))
+        if not geometry_column:
+            raise Exception(f"Could not find any geometry column for Table {self.id}")
+        geometry_srid = geometry_column.srid
 
+        # create list of columns to return
+        cols = [p.name for p in self.properties if p.name != geometry_column.name]
         if columns is not None:
             include_cols = [c.strip() for c in columns.split(",")]
-            for c in cols.copy():
-                if c not in include_cols:
-                    del cols[c]
+            cols = [c for c in cols if c in include_cols]
 
         segSize = bbox.right - bbox.left
 
@@ -182,7 +184,7 @@ class Table(Layer):
             q, p = render(
                 sql_query,
                 tablename=pg_variable(self.id),
-                geometry_column=pg_variable(geometry_column),
+                geometry_column=pg_variable(geometry_column.name),
                 fields=select_fields(*cols),
                 xmin=bbox.left,
                 ymin=bbox.bottom,
@@ -268,7 +270,7 @@ class Function(Layer):
                     ":xmax",
                     ":ymax",
                     ":epsg",
-                    ":query_params",
+                    ":query_params::text::json",
                 ),
             )
             q, p = render(
@@ -306,3 +308,8 @@ class FunctionRegistry:
         """register function(s)"""
         for func in args:
             cls.funcs[func.id] = func
+
+    @classmethod
+    def values(cls):
+        """get all values."""
+        return cls.funcs.values()

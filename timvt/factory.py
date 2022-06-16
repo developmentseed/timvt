@@ -215,9 +215,10 @@ class VectorTilerFactory:
                 except NoMatchFound:
                     return None
 
+            table_catalog = getattr(request.app.state, "table_catalog", {})
             return [
-                Table(**r, tileurl=_get_tiles_url(r["id"]))
-                for r in request.app.state.table_catalog
+                Table(**table_info, tileurl=_get_tiles_url(table_id))
+                for table_id, table_info in table_catalog.items()
             ]
 
         @self.router.get(
@@ -256,6 +257,7 @@ class VectorTilerFactory:
         )
         async def functions_index(request: Request):
             """Index of functions."""
+            function_catalog = getattr(request.app.state, "timvt_function_catalog", {})
 
             def _get_tiles_url(id) -> Optional[str]:
                 try:
@@ -266,8 +268,10 @@ class VectorTilerFactory:
                     return None
 
             return [
-                Function(**func.dict(exclude_none=True), tileurl=_get_tiles_url(id))
-                for id, func in request.app.state.function_catalog.funcs.items()
+                Function(
+                    **func.dict(exclude_none=True), tileurl=_get_tiles_url(func.id)
+                )
+                for func in function_catalog.values()
             ]
 
         @self.router.get(

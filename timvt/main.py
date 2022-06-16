@@ -43,7 +43,7 @@ if settings.cors_origins:
 app.add_middleware(CompressionMiddleware, minimum_size=0)
 
 # We add the function registry to the application state
-app.state.function_catalog = FunctionRegistry()
+app.state.timvt_function_catalog = FunctionRegistry()
 
 
 # Register Start/Stop application event handler to setup/stop the database connection
@@ -75,9 +75,10 @@ app.include_router(tms.router, tags=["TileMatrixSets"])
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def index(request: Request):
     """DEMO."""
+    table_catalog = getattr(request.app.state, "table_catalog", {})
     return templates.TemplateResponse(
         name="index.html",
-        context={"index": request.app.state.table_catalog, "request": request},
+        context={"index": table_catalog.values(), "request": request},
         media_type="text/html",
     )
 

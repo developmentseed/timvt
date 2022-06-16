@@ -57,7 +57,7 @@ from fastapi import FastAPI, Request
 app = FastAPI()
 
 # Add Function registery to the application state
-app.state.function_catalog = FunctionRegistry()
+app.state.timvt_function_catalog = FunctionRegistry()
 
 # Register Start/Stop application event handler to setup/stop the database connection
 # and populate `app.state.table_catalog`
@@ -72,7 +72,7 @@ async def shutdown_event():
     await close_db_connection(app)
 
 # Register Function to the application internal registry
-app.state.function_catalog.register(
+app.state.timvt_function_catalog.register(
     Function.from_file(
         id="squares",  # By default TiMVT will call a function call `squares`
         infile="my_sql_file.sql",  # PATH TO SQL FILE
@@ -90,7 +90,7 @@ app.include_router(mvt_tiler.router)
 
 !!! Important
 
-    A function `Registry` object (timvt.layer.FunctionRegistry) should be initialized and store within the application **state**. TiMVT assumes `app.state.function_catalog` is where the registry is.
+    A function `Registry` object (timvt.layer.FunctionRegistry) should be initialized and stored within the application **state**. TiMVT assumes `app.state.timvt_function_catalog` is where the registry is.
 
 ## Function Options
 

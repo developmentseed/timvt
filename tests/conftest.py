@@ -39,7 +39,7 @@ def app(database_url, monkeypatch):
     from timvt.main import app
 
     # Register Function to the internal registery
-    app.state.function_catalog.register(
+    app.state.timvt_function_catalog.register(
         Function.from_file(
             id="squares",
             infile=os.path.join(DATA_DIR, "squares.sql"),
@@ -47,7 +47,7 @@ def app(database_url, monkeypatch):
     )
 
     # Register the same function but we different options
-    app.state.function_catalog.register(
+    app.state.timvt_function_catalog.register(
         Function.from_file(
             id="squares2",
             infile=os.path.join(DATA_DIR, "squares.sql"),

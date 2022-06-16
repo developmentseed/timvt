@@ -3,6 +3,16 @@
 ## Next (TBD)
 
 * remove `.pbf` extension in tiles endpoints
+* add `orjson` as an optional dependency (for faster JSON encoding/decoding within the database communication)
+* enable `geom` query parameter to select the `geometry column` (defaults to the first one)
+
+**breaking changes**
+
+* renamed `app.state.function_catalog` to `app.state.timvt_function_catalog`
+* changed `timvt.layer.Table` format
+* `table_catalog` is now of `Dict[str, Dict[str, Any]]` type (instead of `List[Dict[str, Any]]`)
+* renamed `timvt.db.table_index` to `timvt.dbmodel.get_table_index`
+* default to only view tables within the `public` schema
 
 ## 0.7.0 (2022-06-09)
 
