@@ -94,7 +94,7 @@ from fastapi import FastAPI, Request
 app = FastAPI()
 
 # Add Function registry to the application state
-app.state.function_catalog = FunctionRegistry()
+app.state.timvt_function_catalog = FunctionRegistry()
 
 # Register Start/Stop application event handler to setup/stop the database connection
 # and populate `app.state.table_catalog`

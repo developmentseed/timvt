@@ -45,7 +45,7 @@ def LayerParams(
     layer: str = Path(..., description="Layer Name"),
 ) -> Layer:
     """Return Layer Object."""
-    # Check function_catalog
+    # Check timvt_function_catalog
     function_catalog = getattr(request.app.state, "timvt_function_catalog", {})
     func = function_catalog.get(layer)
     if func:
