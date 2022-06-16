@@ -8,6 +8,7 @@
 
 **breaking changes**
 
+* renamed `app.state.function_catalog` to `app.state.timvt_function_catalog`
 * changed `timvt.layer.Table` format
 * `table_catalog` is now of `Dict[str, Dict[str, Any]]` type (instead of `List[Dict[str, Any]]`)
 * renamed `timvt.db.table_index` to `timvt.dbmodel.get_table_index`

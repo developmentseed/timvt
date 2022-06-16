@@ -308,3 +308,8 @@ class FunctionRegistry:
         """register function(s)"""
         for func in args:
             cls.funcs[func.id] = func
+
+    @classmethod
+    def values(cls):
+        """get all values."""
+        return cls.funcs.values()

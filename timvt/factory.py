@@ -257,6 +257,7 @@ class VectorTilerFactory:
         )
         async def functions_index(request: Request):
             """Index of functions."""
+            function_catalog = getattr(request.app.state, "timvt_function_catalog", {})
 
             def _get_tiles_url(id) -> Optional[str]:
                 try:
@@ -267,8 +268,10 @@ class VectorTilerFactory:
                     return None
 
             return [
-                Function(**func.dict(exclude_none=True), tileurl=_get_tiles_url(id))
-                for id, func in request.app.state.function_catalog.funcs.items()
+                Function(
+                    **func.dict(exclude_none=True), tileurl=_get_tiles_url(func.id)
+                )
+                for func in function_catalog.values()
             ]
 
         @self.router.get(

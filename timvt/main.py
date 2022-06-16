@@ -43,7 +43,7 @@ if settings.cors_origins:
 app.add_middleware(CompressionMiddleware, minimum_size=0)
 
 # We add the function registry to the application state
-app.state.function_catalog = FunctionRegistry()
+app.state.timvt_function_catalog = FunctionRegistry()
 
 
 # Register Start/Stop application event handler to setup/stop the database connection
