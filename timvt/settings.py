@@ -16,6 +16,7 @@ class _ApiSettings(pydantic.BaseSettings):
 
     name: str = "TiMVT"
     cors_origins: str = "*"
+    cachecontrol: str = "public, max-age=3600"
     debug: bool = False
 
     @pydantic.validator("cors_origins")

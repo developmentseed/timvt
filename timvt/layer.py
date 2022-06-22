@@ -12,7 +12,11 @@ from buildpg import asyncpg, clauses, funcs, render, select_fields
 from pydantic import BaseModel, root_validator
 
 from timvt.dbmodel import Table as DBTable
-from timvt.errors import MissingEPSGCode
+from timvt.errors import (
+    InvalidGeometryColumnName,
+    MissingEPSGCode,
+    MissingGeometryColumn,
+)
 from timvt.settings import TileSettings
 
 tile_settings = TileSettings()
@@ -117,9 +121,16 @@ class Table(Layer, DBTable):
             "buffer", str(tile_settings.tile_buffer)
         )  # Size of extra data to add for a tile.
 
-        geometry_column = self.geometry_column(kwargs.get("geom"))
+        if not self.geometry_columns:
+            raise MissingGeometryColumn(
+                f"Could not find any geometry column for Table {self.id}"
+            )
+
+        geom = kwargs.get("geom", None)
+        geometry_column = self.geometry_column(geom)
         if not geometry_column:
-            raise Exception(f"Could not find any geometry column for Table {self.id}")
+            raise InvalidGeometryColumnName(f"Invalid Geometry Column: {geom}.")
+
         geometry_srid = geometry_column.srid
 
         # create list of columns to return

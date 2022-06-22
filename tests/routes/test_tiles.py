@@ -60,6 +60,15 @@ def test_tile(app):
         list(decoded["default"]["features"][0]["properties"])
     )
 
+    response = app.get("/tiles/public.landsat_wrs/0/0/0?geom=geom")
+    assert response.status_code == 200
+    decoded = mapbox_vector_tile.decode(response.content)
+    assert len(decoded["default"]["features"]) == 10000
+
+    # invalid geometry column name
+    response = app.get("/tiles/public.landsat_wrs/0/0/0?geom=the_geom")
+    assert response.status_code == 404
+
 
 def test_tile_tms(app):
     """request a tile with specific TMS."""

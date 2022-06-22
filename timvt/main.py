@@ -2,8 +2,10 @@
 
 from timvt import __version__ as timvt_version
 from timvt.db import close_db_connection, connect_to_db, register_table_catalog
+from timvt.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from timvt.factory import TMSFactory, VectorTilerFactory
 from timvt.layer import FunctionRegistry
+from timvt.middleware import CacheControlMiddleware
 from timvt.settings import ApiSettings
 
 from fastapi import FastAPI, Request
@@ -40,7 +42,10 @@ if settings.cors_origins:
         allow_headers=["*"],
     )
 
+
+app.add_middleware(CacheControlMiddleware, cachecontrol=settings.cachecontrol)
 app.add_middleware(CompressionMiddleware, minimum_size=0)
+add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
 # We add the function registry to the application state
 app.state.timvt_function_catalog = FunctionRegistry()
