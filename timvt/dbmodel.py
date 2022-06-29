@@ -1,5 +1,5 @@
 """tifeatures.dbmodel: database events."""
-
+import re
 from typing import Any, Dict, List, Optional
 
 from buildpg import asyncpg
@@ -73,14 +73,42 @@ class Table(BaseModel):
 
         return None
 
-    def geometry_column(self, gcol: Optional[str] = None) -> Optional[GeometryColumn]:
+    def geometry_column(
+        self, gcol: Optional[str] = None, zoom: Optional[int] = None
+    ) -> Optional[GeometryColumn]:
         """Return the name of the first geometry column."""
+        base_geom_column = None
         if self.geometry_columns is not None and len(self.geometry_columns) > 0:
-            for c in self.geometry_columns:
-                if gcol is None or c.name == gcol:
-                    return c
+            geometry_columns = self.geometry_columns
+        else:
+            return None
 
-        return None
+        for c in geometry_columns:
+            if gcol is None or c.name == gcol:
+                base_geom_column = c
+                if not re.search(r"(?<=_z)[0-9]+$", c.name):
+                    break
+
+        # If zoom is set check check pregenerated simplified geometries with magic _z notation
+        zcol = base_geom_column
+        if zoom and base_geom_column:
+            maxz = None
+
+            for c in geometry_columns:
+                if c.name != base_geom_column.name and c.name.startswith(
+                    base_geom_column.name
+                ):
+                    m = re.search(r"(?<=_z)[0-9]+$", c.name)
+                    if m:
+                        z = int(m.group(0))
+                        if z == zoom:
+                            return c
+                        if z < zoom and (maxz is None or maxz > z):
+                            maxz = z
+                            zcol = c
+            return zcol
+        else:
+            return base_geom_column
 
     @property
     def id_column_info(self) -> Column:  # type: ignore
