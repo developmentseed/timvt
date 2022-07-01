@@ -7,6 +7,7 @@
 * enable `geom` query parameter to select the `geometry column` (defaults to the first one)
 * add FastAPI application `exception handler` in default app
 * add `CacheControlMiddleware` middleware
+* enable more options to be forwarded to the `asyncpg` pool creation
 
 **breaking changes**
 
