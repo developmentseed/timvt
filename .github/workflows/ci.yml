@@ -63,7 +63,7 @@ jobs:
           name: ${{ matrix.python-version }}
           fail_ci_if_error: false
 
-  pytest_benchmark:
+  benchmark:
     needs: [tests]
     runs-on: ubuntu-latest
     steps:
