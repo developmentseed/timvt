@@ -127,7 +127,8 @@ class Table(Layer, DBTable):
             )
 
         geom = kwargs.get("geom", None)
-        geometry_column = self.geometry_column(geom)
+        geometry_column = self.geometry_column(geom, tile.z)
+        print("geometry_column set to", geometry_column)
         if not geometry_column:
             raise InvalidGeometryColumnName(f"Invalid Geometry Column: {geom}.")
 
@@ -160,15 +161,15 @@ class Table(Layer, DBTable):
                                 coalesce(:tms_srid, 0)
                             ),
                             :seg_size
-                        ) AS geom
+                        ) AS btgeom
                 ),
                 bounds_geomcrs AS (
                     SELECT
                         CASE WHEN coalesce(:tms_srid, 0) != 0 THEN
-                            ST_Transform(bounds_tmscrs.geom, :geometry_srid)
+                            ST_Transform(bounds_tmscrs.btgeom, :geometry_srid)
                         ELSE
-                            ST_Transform(bounds_tmscrs.geom, :tms_proj, :geometry_srid)
-                        END as geom
+                            ST_Transform(bounds_tmscrs.btgeom, :tms_proj, :geometry_srid)
+                        END as bggeom
                     FROM bounds_tmscrs
                 ),
                 mvtgeom AS (
@@ -178,7 +179,7 @@ class Table(Layer, DBTable):
                         ELSE
                             ST_Transform(t.:geometry_column, :tms_proj)
                         END,
-                        bounds_tmscrs.geom,
+                        bounds_tmscrs.btgeom,
                         :tile_resolution,
                         :tile_buffer
                     ) AS geom, :fields
@@ -186,7 +187,7 @@ class Table(Layer, DBTable):
                     -- Find where geometries intersect with input Tile
                     -- Intersects test is made in table geometry's CRS (e.g WGS84)
                     WHERE ST_Intersects(
-                        t.:geometry_column, bounds_geomcrs.geom
+                        t.:geometry_column, bounds_geomcrs.bggeom
                     ) LIMIT :limit
                 )
                 SELECT ST_AsMVT(mvtgeom.*) FROM mvtgeom
@@ -209,7 +210,7 @@ class Table(Layer, DBTable):
                 tile_buffer=int(buffer),
                 limit=limit,
             )
-
+            print(q, p)
             return await conn.fetchval(q, *p)
 
 
