@@ -55,52 +55,53 @@ class Table(BaseModel):
     table: str
     dbschema: str = Field(..., alias="schema")
     description: Optional[str]
-    id_column: Optional[str]
-    geometry_columns: Optional[List[GeometryColumn]]
+    id_column: str
+    geometry_columns: List[GeometryColumn]
     properties: List[Column]
 
     @property
-    def datetime_columns(self) -> Optional[List[Column]]:
+    def datetime_columns(self) -> List[Column]:
         """Return the name of all timestamptz columns."""
         return [p for p in self.properties if p.type.startswith("timestamp")]
 
-    def datetime_column(self, dtcol: Optional[str] = None):
+    def datetime_column(self, name: Optional[str] = None) -> Optional[Column]:
         """Return the Column for either the passed in tstz column or the first tstz column."""
-        if self.datetime_columns:
-            for col in self.datetime_columns:
-                if dtcol is None or col.name == dtcol:
-                    return col
+        for col in self.datetime_columns:
+            if name is None or col.name == name:
+                return col
 
         return None
 
-    def geometry_column(self, gcol: Optional[str] = None) -> Optional[GeometryColumn]:
+    def geometry_column(self, name: Optional[str] = None) -> Optional[GeometryColumn]:
         """Return the name of the first geometry column."""
-        if self.geometry_columns is not None and len(self.geometry_columns) > 0:
-            for c in self.geometry_columns:
-                if gcol is None or c.name == gcol:
-                    return c
+        if name and name.lower() == "none":
+            return None
+
+        for col in self.geometry_columns:
+            if name is None or col.name == name:
+                return col
 
         return None
 
     @property
     def id_column_info(self) -> Column:  # type: ignore
         """Return Column for a unique identifier."""
-        for c in self.properties:
-            if c.name == self.id_column:
-                return c
+        for col in self.properties:
+            if col.name == self.id_column:
+                return col
 
     def columns(self, properties: Optional[List[str]] = None) -> List[str]:
         """Return table columns optionally filtered to only include columns from properties."""
         cols = [c.name for c in self.properties]
         if properties is not None:
-            if self.id_column is not None and self.id_column not in properties:
+            if self.id_column not in properties:
                 properties.append(self.id_column)
 
             geom_col = self.geometry_column()
             if geom_col:
                 properties.append(geom_col.name)
 
-            cols = [c for c in cols if c in properties]
+            cols = [col for col in cols if col in properties]
 
         if len(cols) < 1:
             raise TypeError("No columns selected")
@@ -130,24 +131,28 @@ async def get_table_index(
     query = """
         WITH t AS (
             SELECT
-                schemaname,
-                tablename,
-                format('%I.%I', schemaname, tablename) as id,
-                format('%I.%I', schemaname, tablename)::regclass as t_oid,
-                obj_description(format('%I.%I', schemaname, tablename)::regclass, 'pg_class') as description,
+                nspname as schemaname,
+                relname as tablename,
+                format('%I.%I', nspname, relname) as id,
+                c.oid as t_oid,
+                obj_description(c.oid, 'pg_class') as description,
                 (
                     SELECT
                         attname
                     FROM
+                        pg_attribute a
+                        LEFT JOIN
                         pg_index i
-                        JOIN pg_attribute a ON
+                        ON (
                             a.attrelid = i.indrelid
                             AND a.attnum = ANY(i.indkey)
+                            )
                     WHERE
-                        i.indrelid = format('%I.%I', schemaname, tablename)::regclass
-                        AND
-                        (i.indisunique OR i.indisprimary)
-                    ORDER BY i.indisprimary
+                        a.attrelid = c.oid
+                    ORDER BY
+                        i.indisprimary DESC NULLS LAST,
+                        i.indisunique DESC NULLS LAST,
+                        attname ~* E'id$' DESC NULLS LAST
                     LIMIT 1
                 ) as pk,
                 (
@@ -163,7 +168,8 @@ async def get_table_index(
                         pg_attribute
                     WHERE
                         attnum>0
-                        AND attrelid=format('%I.%I', schemaname, tablename)::regclass
+                        AND attrelid=c.oid
+                        AND NOT attisdropped
                 ) as columns,
                 (
                     SELECT
@@ -209,16 +215,18 @@ async def get_table_index(
                         FROM geography_columns
                         ) as geo
                     WHERE
-                        f_table_schema = schemaname
-                        AND f_table_name = tablename
+                        f_table_schema = n.nspname
+                        AND f_table_name = c.relname
                 ) as geometry_columns
             FROM
-                pg_tables
+                pg_class c
+                JOIN pg_namespace n ON (c.relnamespace=n.oid)
             WHERE
-                schemaname NOT IN ('pg_catalog', 'information_schema')
-                AND tablename NOT IN ('spatial_ref_sys','geometry_columns')
-                AND (:schemas::text[] IS NULL OR schemaname = ANY (:schemas))
-                AND (:tables::text[] IS NULL OR tablename = ANY (:tables))
+                relkind in ('r','v', 'm', 'f', 'p')
+                AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+                AND c.relname NOT IN ('spatial_ref_sys','geometry_columns')
+                AND (:schemas::text[] IS NULL OR n.nspname = ANY (:schemas))
+                AND (:tables::text[] IS NULL OR c.relname = ANY (:tables))
 
         )
         SELECT
