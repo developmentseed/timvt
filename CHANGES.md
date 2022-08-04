@@ -8,6 +8,7 @@
 * add FastAPI application `exception handler` in default app
 * add `CacheControlMiddleware` middleware
 * enable more options to be forwarded to the `asyncpg` pool creation
+* add `PG_SCHEMAS` and `PG_TABLES` environment variable to specify Postgres schemas and tables
 
 **breaking changes**
 

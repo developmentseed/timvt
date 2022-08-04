@@ -6,7 +6,7 @@ from timvt.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from timvt.factory import TMSFactory, VectorTilerFactory
 from timvt.layer import FunctionRegistry
 from timvt.middleware import CacheControlMiddleware
-from timvt.settings import ApiSettings
+from timvt.settings import ApiSettings, PostgresSettings
 
 from fastapi import FastAPI, Request
 
@@ -23,6 +23,7 @@ except ImportError:
 
 templates = Jinja2Templates(directory=str(resources_files(__package__) / "templates"))  # type: ignore
 settings = ApiSettings()
+postgres_settings = PostgresSettings()
 
 # Create TiVTiler Application.
 app = FastAPI(
@@ -55,8 +56,12 @@ app.state.timvt_function_catalog = FunctionRegistry()
 @app.on_event("startup")
 async def startup_event():
     """Application startup: register the database connection and create table list."""
-    await connect_to_db(app)
-    await register_table_catalog(app)
+    await connect_to_db(app, settings=postgres_settings)
+    await register_table_catalog(
+        app,
+        schemas=postgres_settings.db_schemas,
+        tables=postgres_settings.db_tables,
+    )
 
 
 @app.on_event("shutdown")
