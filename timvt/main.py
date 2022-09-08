@@ -55,11 +55,11 @@ app.state.timvt_function_catalog = FunctionRegistry()
 if settings.functions_directory:
     functions = pathlib.Path(settings.functions_directory).glob("*.sql")
     for func in functions:
+        name = func.name
+        if name.endswith(".sql"):
+            name = name[:-4]
         app.state.timvt_function_catalog.register(
-            Function.from_file(
-                id=func.name.removesuffix(".sql"),  # type: ignore
-                infile=str(func),
-            )
+            Function.from_file(id=name, infile=str(func))
         )
 
 
