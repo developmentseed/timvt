@@ -23,7 +23,7 @@ def database_url(test_db):
     a database url which we pass to our application through a monkeypatched environment variable.
     """
     assert test_db.install_extension("postgis")
-    test_db.run_sql_file(os.path.join(DATA_DIR, "landsat_wrs.sql"))
+    test_db.run_sql_file(os.path.join(DATA_DIR, "data", "landsat_wrs.sql"))
     assert test_db.has_table("landsat_wrs")
     return test_db.connection.engine.url
 
@@ -34,17 +34,10 @@ def app(database_url, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", str(database_url))
     monkeypatch.setenv("TIMVT_DEFAULT_MINZOOM", str(5))
     monkeypatch.setenv("TIMVT_DEFAULT_MAXZOOM", str(12))
+    monkeypatch.setenv("TIMVT_FUNCTIONS_DIRECTORY", DATA_DIR)
 
     from timvt.layer import Function
     from timvt.main import app
-
-    # Register Function to the internal registery
-    app.state.timvt_function_catalog.register(
-        Function.from_file(
-            id="squares",
-            infile=os.path.join(DATA_DIR, "squares.sql"),
-        )
-    )
 
     # Register the same function but we different options
     app.state.timvt_function_catalog.register(

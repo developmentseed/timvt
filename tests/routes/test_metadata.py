@@ -34,18 +34,28 @@ def test_function_index(app):
     response = app.get("/functions.json")
     assert response.status_code == 200
     body = response.json()
-    assert len(body) == 2
-    assert body[0]["id"] == "squares"
-    assert body[0]["function_name"] == "squares"
-    assert body[0]["bounds"]
-    assert body[0]["tileurl"]
-    assert "options" not in body[0]
+    assert len(body) == 3
 
-    assert body[1]["id"] == "squares2"
-    assert body[0]["function_name"] == "squares"
-    assert body[1]["bounds"] == [0.0, 0.0, 180.0, 90.0]
-    assert body[1]["tileurl"]
-    assert body[1]["options"] == [{"name": "depth", "default": 2}]
+    func = list(filter(lambda x: x["id"] == "landsat_poly_centroid", body))[0]
+    assert func["id"] == "landsat_poly_centroid"
+    assert func["function_name"] == "landsat_poly_centroid"
+    assert func["bounds"]
+    assert func["tileurl"]
+    assert "options" not in func
+
+    func = list(filter(lambda x: x["id"] == "squares", body))[0]
+    assert func["id"] == "squares"
+    assert func["function_name"] == "squares"
+    assert func["bounds"]
+    assert func["tileurl"]
+    assert "options" not in func
+
+    func = list(filter(lambda x: x["id"] == "squares2", body))[0]
+    assert func["id"] == "squares2"
+    assert func["function_name"] == "squares"
+    assert func["bounds"] == [0.0, 0.0, 180.0, 90.0]
+    assert func["tileurl"]
+    assert func["options"] == [{"name": "depth", "default": 2}]
 
 
 def test_function_info(app):

@@ -9,6 +9,10 @@
 * add `CacheControlMiddleware` middleware
 * enable more options to be forwarded to the `asyncpg` pool creation
 * add `PG_SCHEMAS` and `PG_TABLES` environment variable to specify Postgres schemas and tables
+* add `TIMVT_FUNCTIONS_DIRECTORY` environment variable to look for function SQL files
+* switch viewer to Maplibre
+* add `Point` and `LineString` feature support in viewer
+* Update dockerfiles to python3.10 and postgres14-postgis3.2
 
 **breaking changes**
 

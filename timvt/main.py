@@ -1,10 +1,12 @@
-"""TiVTiler app."""
+"""TiMVT application."""
+
+import pathlib
 
 from timvt import __version__ as timvt_version
 from timvt.db import close_db_connection, connect_to_db, register_table_catalog
 from timvt.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from timvt.factory import TMSFactory, VectorTilerFactory
-from timvt.layer import FunctionRegistry
+from timvt.layer import Function, FunctionRegistry
 from timvt.middleware import CacheControlMiddleware
 from timvt.settings import ApiSettings, PostgresSettings
 
@@ -50,6 +52,15 @@ add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
 # We add the function registry to the application state
 app.state.timvt_function_catalog = FunctionRegistry()
+if settings.functions_directory:
+    functions = pathlib.Path(settings.functions_directory).glob("*.sql")
+    for func in functions:
+        name = func.name
+        if name.endswith(".sql"):
+            name = name[:-4]
+        app.state.timvt_function_catalog.register(
+            Function.from_file(id=name, infile=str(func))
+        )
 
 
 # Register Start/Stop application event handler to setup/stop the database connection
