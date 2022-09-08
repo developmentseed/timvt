@@ -34,18 +34,25 @@ def test_function_index(app):
     response = app.get("/functions.json")
     assert response.status_code == 200
     body = response.json()
-    assert len(body) == 2
-    assert body[0]["id"] == "squares"
-    assert body[0]["function_name"] == "squares"
+    assert len(body) == 3
+
+    assert body[0]["id"] == "landsat_poly_centroid"
+    assert body[0]["function_name"] == "landsat_poly_centroid"
     assert body[0]["bounds"]
     assert body[0]["tileurl"]
     assert "options" not in body[0]
 
-    assert body[1]["id"] == "squares2"
-    assert body[0]["function_name"] == "squares"
-    assert body[1]["bounds"] == [0.0, 0.0, 180.0, 90.0]
+    assert body[1]["id"] == "squares"
+    assert body[1]["function_name"] == "squares"
+    assert body[1]["bounds"]
     assert body[1]["tileurl"]
-    assert body[1]["options"] == [{"name": "depth", "default": 2}]
+    assert "options" not in body[1]
+
+    assert body[2]["id"] == "squares2"
+    assert body[2]["function_name"] == "squares"
+    assert body[2]["bounds"] == [0.0, 0.0, 180.0, 90.0]
+    assert body[2]["tileurl"]
+    assert body[2]["options"] == [{"name": "depth", "default": 2}]
 
 
 def test_function_info(app):

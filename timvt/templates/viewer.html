@@ -3,14 +3,11 @@
 
 <head>
   <meta charset='utf-8' />
-  <title>Ti VTiler</title>
+  <title>TiMVT</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js'></script>
-  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css' rel='stylesheet' />
-
-  <link href='https://api.mapbox.com/mapbox-assembly/v0.23.2/assembly.min.css' rel='stylesheet'>
-  <script src='https://api.mapbox.com/mapbox-assembly/v0.23.2/assembly.js'></script>
+  <script src='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'></script>
+  <link href='https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css' rel='stylesheet' />
 
   <style>
     body {
@@ -32,7 +29,7 @@
 <body>
   <div id='map'></div>
   <script>
-    var map = new mapboxgl.Map({
+    var map = new maplibregl.Map({
       container: 'map',
       style: {
         version: 8,
@@ -69,41 +66,80 @@
         type: 'vector',
         url: '{{ endpoint }}',
       })
+
       map.addLayer({
-        id: 'table',
+        id: 'view-polygon',
         source: 'table',
         'source-layer': 'default',
         type: 'fill',
+        'filter': ["==", "$type", "Polygon"],
         paint: {
           'fill-color': 'rgba(200, 100, 240, 0.4)',
           'fill-outline-color': '#000'
         }
       })
 
+      map.addLayer({
+        id: 'view-polygon-outline',
+        source: 'table',
+        'source-layer': 'default',
+        type: 'line',
+        'filter': ["==", "$type", "Polygon"],
+        paint: {
+          'line-color': '#000',
+          'line-width': 1,
+          'line-opacity': 0.75
+        }
+      })
+
+      map.addLayer({
+        id: 'view-point',
+        source: 'table',
+        'source-layer': 'default',
+        filter: ["==", "$type", "Point"],
+        type: 'circle',
+        paint: {
+          'circle-color': '#000',
+          'circle-radius': 2.5,
+          'circle-opacity': 0.75
+        }
+      })
+
+      map.addLayer({
+        id: 'view-line',
+        source: 'table',
+        'source-layer': 'default',
+        filter: ["==", "$type", "LineString"],
+        type: 'line',
+        paint: {
+          'line-color': 'rgba(200, 100, 240, 0.4)',
+          'line-width': 1,
+          'line-opacity': 0.75
+        }
+      });
+
       // Change the cursor to a pointer when the mouse is over the places layer.
-      map.on('mouseenter', 'table', function () {
+      map.on('mouseenter', 'view-polygon', function () {
         map.getCanvas().style.cursor = 'pointer'
       })
 
       // Change it back to a pointer when it leaves.
-      map.on('mouseleave', 'table', function () {
+      map.on('mouseleave', 'view-polygon', function () {
         map.getCanvas().style.cursor = ''
       })
 
-      map.on('click', 'table', function (e) {
+      map.on('click', 'view-polygon', function (e) {
         props = e.features[0].properties;
         t = '<table>';
         for (var key in props){
           t += "<tr><td>" + key + "</td><td>" + props[key] + "</td></tr>";
         }
         t += '</table>';
-        new mapboxgl.Popup()
+        new maplibregl.Popup()
           .setLngLat(e.lngLat)
           .setHTML(t)
           .addTo(map);
       })
-
-
     })
   </script>
 
