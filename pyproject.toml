@@ -22,7 +22,7 @@ dynamic = ["version"]
 dependencies = [
     "asyncpg>=0.23.0",
     "buildpg>=0.3",
-    "fastapi>=0.73",
+    "fastapi>=0.87",
     "jinja2>=2.11.2,<4.0.0",
     "morecantile>=3.1,<4.0",
     "starlette-cramjam>=0.3,<0.4",
@@ -38,7 +38,7 @@ test = [
     "pytest-cov",
     "pytest-asyncio",
     "pytest-benchmark",
-    "requests",
+    "httpx",
     "psycopg2",
     "pytest-pgsql",
     "mapbox-vector-tile",

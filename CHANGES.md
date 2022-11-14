@@ -12,7 +12,9 @@
 * add `TIMVT_FUNCTIONS_DIRECTORY` environment variable to look for function SQL files
 * switch viewer to Maplibre
 * add `Point` and `LineString` feature support in viewer
-* Update dockerfiles to python3.10 and postgres14-postgis3.2
+* Update dockerfiles to python3.10 and postgres14-postgis3.3
+* update FastAPI requirement to >0.87
+* remove endpoint Tags
 
 **breaking changes**
 

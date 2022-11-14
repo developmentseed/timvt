@@ -86,8 +86,6 @@ class VectorTilerFactory:
 
     def register_routes(self):
         """Register Routes."""
-        self.register_tiles()
-
         if self.with_tables_metadata:
             self.register_tables_metadata()
 
@@ -96,6 +94,8 @@ class VectorTilerFactory:
 
         if self.with_viewer:
             self.register_viewer()
+
+        self.register_tiles()
 
     def url_for(self, request: Request, name: str, **path_params: Any) -> str:
         """Return full url (with prefix) for a specific endpoint."""
@@ -109,15 +109,9 @@ class VectorTilerFactory:
         """Register /tiles endpoints."""
 
         @self.router.get(
-            "/tiles/{layer}/{z}/{x}/{y}",
-            **TILE_RESPONSE_PARAMS,
-            tags=["Tiles"],
+            "/tiles/{TileMatrixSetId}/{layer}/{z}/{x}/{y}", **TILE_RESPONSE_PARAMS
         )
-        @self.router.get(
-            "/tiles/{TileMatrixSetId}/{layer}/{z}/{x}/{y}",
-            **TILE_RESPONSE_PARAMS,
-            tags=["Tiles"],
-        )
+        @self.router.get("/tiles/{layer}/{z}/{x}/{y}", **TILE_RESPONSE_PARAMS)
         async def tile(
             request: Request,
             tile: Tile = Depends(TileParams),
@@ -135,18 +129,16 @@ class VectorTilerFactory:
             return Response(bytes(content), media_type=MimeTypes.pbf.value)
 
         @self.router.get(
-            "/{layer}/tilejson.json",
-            response_model=TileJSON,
-            responses={200: {"description": "Return a tilejson"}},
-            response_model_exclude_none=True,
-            tags=["Tiles"],
-        )
-        @self.router.get(
             "/{TileMatrixSetId}/{layer}/tilejson.json",
             response_model=TileJSON,
             responses={200: {"description": "Return a tilejson"}},
             response_model_exclude_none=True,
-            tags=["Tiles"],
+        )
+        @self.router.get(
+            "/{layer}/tilejson.json",
+            response_model=TileJSON,
+            responses={200: {"description": "Return a tilejson"}},
+            response_model_exclude_none=True,
         )
         async def tilejson(
             request: Request,
@@ -202,7 +194,6 @@ class VectorTilerFactory:
             "/tables.json",
             response_model=List[Table],
             response_model_exclude_none=True,
-            tags=["Tables"],
         )
         async def tables_index(request: Request):
             """Index of tables."""
@@ -226,7 +217,6 @@ class VectorTilerFactory:
             response_model=Table,
             responses={200: {"description": "Return table metadata"}},
             response_model_exclude_none=True,
-            tags=["Tables"],
         )
         async def table_metadata(
             request: Request,
@@ -253,7 +243,6 @@ class VectorTilerFactory:
             response_model=List[Function],
             response_model_exclude_none=True,
             response_model_exclude={"sql"},
-            tags=["Functions"],
         )
         async def functions_index(request: Request):
             """Index of functions."""
@@ -280,7 +269,6 @@ class VectorTilerFactory:
             responses={200: {"description": "Return Function metadata"}},
             response_model_exclude_none=True,
             response_model_exclude={"sql"},
-            tags=["Functions"],
         )
         async def function_metadata(
             request: Request,
@@ -302,9 +290,7 @@ class VectorTilerFactory:
     def register_viewer(self):
         """Register viewer."""
 
-        @self.router.get(
-            "/{layer}/viewer", response_class=HTMLResponse, tags=["Viewer"]
-        )
+        @self.router.get("/{layer}/viewer", response_class=HTMLResponse)
         async def demo(request: Request, layer=Depends(LayerParams)):
             """Demo for each table."""
             tile_url = self.url_for(request, "tilejson", layer=layer.id)
