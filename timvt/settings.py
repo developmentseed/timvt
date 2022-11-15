@@ -1,14 +1,45 @@
 """
 TiMVT config.
 
-TiVTiler uses pydantic.BaseSettings to either get settings from `.env` or environment variables
+TiMVT uses pydantic.BaseSettings to either get settings from `.env` or environment variables
 see: https://pydantic-docs.helpmanual.io/usage/settings/
 
 """
+import sys
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
 import pydantic
+
+# Pydantic does not support older versions of typing.TypedDict
+# https://github.com/pydantic/pydantic/pull/3374
+if sys.version_info < (3, 9, 2):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
+
+
+class TableConfig(TypedDict, total=False):
+    """Configuration to add table options with env variables."""
+
+    geomcol: Optional[str]
+    datetimecol: Optional[str]
+    pk: Optional[str]
+    properties: Optional[List[str]]
+
+
+class TableSettings(pydantic.BaseSettings):
+    """Table configuration settings"""
+
+    fallback_key_names: List[str] = ["ogc_fid", "id", "pkey", "gid"]
+    table_config: Dict[str, TableConfig] = {}
+
+    class Config:
+        """model config"""
+
+        env_prefix = "TIMVT_"
+        env_file = ".env"
+        env_nested_delimiter = "__"
 
 
 class _ApiSettings(pydantic.BaseSettings):

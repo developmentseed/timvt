@@ -24,6 +24,7 @@
 * renamed `timvt.db.table_index` to `timvt.dbmodel.get_table_index`
 * default to only view tables within the `public` schema
 * renamed *base exception class* to `TiMVTError`
+* remove python 3.7 support
 
 ## 0.7.0 (2022-06-09)
 

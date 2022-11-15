@@ -37,6 +37,9 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
 
     id: str
     bounds: List[float] = [-180, -90, 180, 90]
+    crs: str = "http://www.opengis.net/def/crs/EPSG/0/4326"
+    title: Optional[str]
+    description: Optional[str]
     minzoom: int = tile_settings.default_minzoom
     maxzoom: int = tile_settings.default_maxzoom
     default_tms: str = tile_settings.default_tms
@@ -91,7 +94,11 @@ class Table(Layer, DBTable):
         """Get default bounds from the first geometry columns."""
         geoms = values.get("geometry_columns")
         if geoms:
-            values["bounds"] = geoms[0].bounds
+            # Get the Extent of all the bounds
+            minx, miny, maxx, maxy = zip(*[geom.bounds for geom in geoms])
+            values["bounds"] = [min(minx), min(miny), max(maxx), max(maxy)]
+            values["crs"] = f"http://www.opengis.net/def/crs/EPSG/0/{geoms[0].srid}"
+
         return values
 
     async def get_tile(
@@ -127,7 +134,7 @@ class Table(Layer, DBTable):
             )
 
         geom = kwargs.get("geom", None)
-        geometry_column = self.geometry_column(geom)
+        geometry_column = self.get_geometry_column(geom)
         if not geometry_column:
             raise InvalidGeometryColumnName(f"Invalid Geometry Column: {geom}.")
 
