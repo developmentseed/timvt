@@ -145,7 +145,7 @@ $ docker run \
 
 `:endpoint:/docs`
 
-![](https://user-images.githubusercontent.com/10407788/136578935-e1170784-5a4f-4946-842c-9a6de39165f6.jpg)
+![](https://user-images.githubusercontent.com/10407788/202146065-2ddcf159-123c-48f9-a208-7dcd46201cb4.png)
 
 
 ## Contribution & Development
