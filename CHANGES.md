@@ -1,6 +1,6 @@
 # Release Notes
 
-## Next (TBD)
+## 0.8.0a0 (2022-11-16)
 
 * remove `.pbf` extension in tiles endpoints
 * add `orjson` as an optional dependency (for faster JSON encoding/decoding within the database communication)
@@ -15,6 +15,7 @@
 * Update dockerfiles to python3.10 and postgres14-postgis3.3
 * update FastAPI requirement to >0.87
 * remove endpoint Tags
+* make orjson a default requirement
 
 **breaking changes**
 
