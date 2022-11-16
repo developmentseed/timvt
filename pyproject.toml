@@ -1,11 +1,11 @@
 [project]
 name = "timvt"
 description = "A lightweight PostGIS based dynamic vector tile server."
-readme = "README.md"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
 authors = [
-    {name = "Vincent Sarago", email = "vincent@developmentseed.com"},
+    {name = "Vincent Sarago", email = "vincent@developmentseed.org"},
+    {name = "David Bitner", email = "david@developmentseed.org"},
 ]
 keywords = ["FastAPI", "MVT", "POSTGIS"]
 classifiers = [
@@ -18,8 +18,9 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: GIS",
 ]
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 dependencies = [
+    "orjson",
     "asyncpg>=0.23.0",
     "buildpg>=0.3",
     "fastapi>=0.87",
@@ -31,9 +32,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-all = [
-    "orjson",
-]
 test = [
     "pytest",
     "pytest-cov",
@@ -50,7 +48,7 @@ dev = [
     "pre-commit",
 ]
 server = [
-    "uvicorn[standard]>=0.12.0,<0.16.0",
+    "uvicorn[standard]>=0.12.0,<0.19.0",
 ]
 docs = [
     "nbconvert",
@@ -62,29 +60,28 @@ docs = [
 ]
 
 [project.urls]
+Homepage = "https://developmentseed.org/timvt/"
 Source = "https://github.com/developmentseed/timvt"
 Documentation = "https://developmentseed.org/timvt/"
 
-[build-system]
-requires = ["flit>=3.2,<4"]
-build-backend = "flit_core.buildapi"
+[tool.hatch.version]
+path = "timvt/__init__.py"
 
-[tool.flit.module]
-name = "timvt"
-
-[tool.flit.sdist]
+[tool.hatch.build.targets.sdist]
 exclude = [
-    "tests/",
-    "docs/",
-    ".github/",
-    "CHANGES.md",
-    "CONTRIBUTING.md",
-    "dockerfiles",
-    "demo",
-    ".env*",
-    "data/",
-    "docker-compose.yml",
+  "/tests",
+  "/dockerfiles",
+  "/docs",
+  "/demo",
+  "/data",
+  "docker-compose.yml",
+  "CONTRIBUTING.md",
+  "CHANGES.md",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.isort]
 profile = "black"
