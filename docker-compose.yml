@@ -37,3 +37,21 @@ services:
     command: postgres -N 500
     volumes:
       - ./.pgdata:/var/lib/postgresql/data
+
+  # pg_tileserv:
+  #   image: pramsey/pg_tileserv:latest
+  #   environment:
+  #     - DATABASE_URL=postgresql://username:password@database:5432/postgis
+  #   ports:
+  #     - "7800:7800"
+  #   depends_on:
+  #   - database
+
+  # martin:
+  #   image: maplibre/martin
+  #   environment:
+  #     - DATABASE_URL=postgresql://username:password@database:5432/postgis
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #   - database
