@@ -78,6 +78,14 @@ exclude = [
   "docker-compose.yml",
   "CONTRIBUTING.md",
   "CHANGES.md",
+  ".pytest_cache",
+  ".history",
+  ".github",
+  ".env.example",
+  ".bumpversion.cfg",
+  ".flake8",
+  ".gitignore",
+  ".pre-commit-config.yaml",
 ]
 
 [build-system]

@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.8.0a1 (2022-11-21)
+
+* update hatch config
+
 ## 0.8.0a0 (2022-11-16)
 
 * remove `.pbf` extension in tiles endpoints
