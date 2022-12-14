@@ -8,7 +8,7 @@ from timvt.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from timvt.factory import TMSFactory, VectorTilerFactory
 from timvt.layer import Function, FunctionRegistry
 from timvt.middleware import CacheControlMiddleware
-from timvt.settings import ApiSettings, PostgresSettings
+from timvt.settings import ApiSettings, PostgresSettings, TileSettings
 
 from fastapi import FastAPI, Request
 
@@ -26,6 +26,7 @@ except ImportError:
 templates = Jinja2Templates(directory=str(resources_files(__package__) / "templates"))  # type: ignore
 settings = ApiSettings()
 postgres_settings = PostgresSettings()
+tile_settings = TileSettings()
 
 # Create TiVTiler Application.
 app = FastAPI(
@@ -83,6 +84,7 @@ async def shutdown_event():
 
 # Register endpoints.
 mvt_tiler = VectorTilerFactory(
+    default_tms=tile_settings.default_tms,
     with_tables_metadata=True,
     with_functions_metadata=True,
     with_viewer=True,

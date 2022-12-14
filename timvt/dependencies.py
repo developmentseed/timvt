@@ -1,34 +1,14 @@
 """TiVTiler.dependencies: endpoint's dependencies."""
 
 import re
-from enum import Enum
 
-from morecantile import Tile, TileMatrixSet, tms
+from morecantile import Tile
 
 from timvt.layer import Layer, Table
-from timvt.settings import TileSettings
 
-from fastapi import HTTPException, Path, Query
+from fastapi import HTTPException, Path
 
 from starlette.requests import Request
-
-tile_settings = TileSettings()
-
-TileMatrixSetNames = Enum(  # type: ignore
-    "TileMatrixSetNames", [(a, a) for a in sorted(tms.list())]
-)
-
-default_tms = TileMatrixSetNames[tile_settings.default_tms]
-
-
-def TileMatrixSetParams(
-    TileMatrixSetId: TileMatrixSetNames = Query(
-        default_tms,
-        description=f"TileMatrixSet Name (default: '{tile_settings.default_tms}')",
-    ),
-) -> TileMatrixSet:
-    """TileMatrixSet parameters."""
-    return tms.get(TileMatrixSetId.name)
 
 
 def TileParams(

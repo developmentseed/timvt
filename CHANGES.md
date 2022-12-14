@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.8.0a2 (TBD)
+
+* replace `VectorTilerFactory.tms_dependency` attribute by `TilerFactory.supported_tms`. This attribute gets a `morecantile.defaults.TileMatrixSets` store and will create the tms dependencies dynamically
+* replace `TMSFactory.tms_dependency` attribute by `TMSFactory.supported_tms`. This attribute gets a `morecantile.defaults.TileMatrixSets` store and will create the tms dependencies dynamically
+* add `default_tms` in `VectorTilerFactory` to set the default TMS identifier supported by the tiler (e.g `WebMercatorQuad`)
+
 ## 0.8.0a1 (2022-11-21)
 
 * update hatch config
