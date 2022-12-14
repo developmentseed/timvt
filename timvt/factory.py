@@ -1,23 +1,20 @@
 """timvt.endpoints.factory: router factories."""
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Literal, Optional
 from urllib.parse import urlencode
 
 from morecantile import Tile, TileMatrixSet
+from morecantile import tms as morecantile_tms
+from morecantile.defaults import TileMatrixSets
 
-from timvt.dependencies import (
-    LayerParams,
-    TileMatrixSetNames,
-    TileMatrixSetParams,
-    TileParams,
-)
+from timvt.dependencies import LayerParams, TileParams
 from timvt.layer import Function, Layer, Table
 from timvt.models.mapbox import TileJSON
 from timvt.models.OGC import TileMatrixSetList
 from timvt.resources.enums import MimeTypes
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Path, Query
 
 from starlette.datastructures import QueryParams
 from starlette.requests import Request
@@ -67,7 +64,8 @@ class VectorTilerFactory:
     router: APIRouter = field(default_factory=APIRouter)
 
     # TileMatrixSet dependency
-    tms_dependency: Callable[..., TileMatrixSet] = TileMatrixSetParams
+    supported_tms: TileMatrixSets = morecantile_tms
+    default_tms: str = "WebMercatorQuad"
 
     # Table/Function dependency
     layer_dependency: Callable[..., Layer] = LayerParams
@@ -115,11 +113,15 @@ class VectorTilerFactory:
         async def tile(
             request: Request,
             tile: Tile = Depends(TileParams),
-            tms: TileMatrixSet = Depends(self.tms_dependency),
+            TileMatrixSetId: Literal[tuple(self.supported_tms.list())] = Query(
+                self.default_tms,
+                description=f"TileMatrixSet Name (default: '{self.default_tms}')",
+            ),
             layer=Depends(self.layer_dependency),
         ):
             """Return vector tile."""
             pool = request.app.state.pool
+            tms = self.supported_tms.get(TileMatrixSetId)
 
             kwargs = queryparams_to_kwargs(
                 request.query_params, ignore_keys=["tilematrixsetid"]
@@ -143,7 +145,10 @@ class VectorTilerFactory:
         async def tilejson(
             request: Request,
             layer=Depends(self.layer_dependency),
-            tms: TileMatrixSet = Depends(self.tms_dependency),
+            TileMatrixSetId: Literal[tuple(self.supported_tms.list())] = Query(
+                self.default_tms,
+                description=f"TileMatrixSet Name (default: '{self.default_tms}')",
+            ),
             minzoom: Optional[int] = Query(
                 None, description="Overwrite default minzoom."
             ),
@@ -152,6 +157,8 @@ class VectorTilerFactory:
             ),
         ):
             """Return TileJSON document."""
+            tms = self.supported_tms.get(TileMatrixSetId)
+
             path_params: Dict[str, Any] = {
                 "TileMatrixSetId": tms.identifier,
                 "layer": layer.id,
@@ -308,11 +315,7 @@ class VectorTilerFactory:
 class TMSFactory:
     """TileMatrixSet endpoints Factory."""
 
-    # Enum of supported TMS
-    supported_tms: Type[TileMatrixSetNames] = TileMatrixSetNames
-
-    # TileMatrixSet dependency
-    tms_dependency: Callable[..., TileMatrixSet] = TileMatrixSetParams
+    supported_tms: TileMatrixSets = morecantile_tms
 
     # FastAPI router
     router: APIRouter = field(default_factory=APIRouter)
@@ -351,21 +354,21 @@ class TMSFactory:
             return {
                 "tileMatrixSets": [
                     {
-                        "id": tms.name,
-                        "title": tms.name,
+                        "id": tms.identifier,
+                        "title": tms.identifier,
                         "links": [
                             {
                                 "href": self.url_for(
                                     request,
                                     "TileMatrixSet_info",
-                                    TileMatrixSetId=tms.name,
+                                    TileMatrixSetId=tms.identifier,
                                 ),
                                 "rel": "item",
                                 "type": "application/json",
                             }
                         ],
                     }
-                    for tms in self.supported_tms
+                    for tms in self.supported_tms.tms.values()
                 ]
             }
 
@@ -374,6 +377,12 @@ class TMSFactory:
             response_model=TileMatrixSet,
             response_model_exclude_none=True,
         )
-        async def TileMatrixSet_info(tms: TileMatrixSet = Depends(self.tms_dependency)):
-            """Return TileMatrixSet JSON document."""
-            return tms
+        async def TileMatrixSet_info(
+            TileMatrixSetId: Literal[tuple(self.supported_tms.list())] = Path(
+                ..., description="TileMatrixSet Name."
+            )
+        ):
+            """
+            OGC Specification: http://docs.opengeospatial.org/per/19-069.html#_tilematrixset
+            """
+            return self.supported_tms.get(TileMatrixSetId)
