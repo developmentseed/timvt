@@ -27,6 +27,12 @@
 
 ---
 
+> :warning: This project is on pause while we focus on [`developmentseed/tipg`](https://github.com/developmentseed/tipg) :warning:
+>
+>  ref: https://github.com/developmentseed/timvt/discussions/96
+
+---
+
 `TiMVT`, pronounced **tee-MVT**, is a python package which helps creating lightweight [Vector Tiles](https://github.com/mapbox/vector-tile-spec) service from [PostGIS](https://github.com/postgis/postgis) Database.
 
 Built on top of the *modern and fast* [FastAPI](https://fastapi.tiangolo.com) framework, timvt is written in Python using async/await asynchronous code to improve the performances and handle heavy loads.
