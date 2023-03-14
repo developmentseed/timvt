@@ -356,21 +356,21 @@ class TMSFactory:
             return {
                 "tileMatrixSets": [
                     {
-                        "id": tms.identifier,
-                        "title": tms.identifier,
+                        "id": tms,
+                        "title": tms,
                         "links": [
                             {
                                 "href": self.url_for(
                                     request,
                                     "TileMatrixSet_info",
-                                    TileMatrixSetId=tms.identifier,
+                                    TileMatrixSetId=tms,
                                 ),
                                 "rel": "item",
                                 "type": "application/json",
                             }
                         ],
                     }
-                    for tms in self.supported_tms.tms.values()
+                    for tms in self.supported_tms.list()
                 ]
             }
 
