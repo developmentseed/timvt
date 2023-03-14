@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.8.0a3 (2023-03-14)
+
+* fix factories `url_for` type (for starlette >=0.26)
+
 ## 0.8.0a2 (2022-12-14)
 
 * replace `VectorTilerFactory.tms_dependency` attribute by `TilerFactory.supported_tms`. This attribute gets a `morecantile.defaults.TileMatrixSets` store and will create the tms dependencies dynamically
