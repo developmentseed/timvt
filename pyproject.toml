@@ -44,6 +44,7 @@ test = [
     "mapbox-vector-tile",
     "protobuf>=3.0,<4.0",
     "numpy",
+    "sqlalchemy>=1.1,<1.4",
 ]
 dev = [
     "pre-commit",

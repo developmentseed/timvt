@@ -101,7 +101,8 @@ class VectorTilerFactory:
         base_url = str(request.base_url)
         if self.router_prefix:
             base_url += self.router_prefix.lstrip("/")
-        return url_path.make_absolute_url(base_url=base_url)
+
+        return str(url_path.make_absolute_url(base_url=base_url))
 
     def register_tiles(self):
         """Register /tiles endpoints."""
@@ -335,7 +336,8 @@ class TMSFactory:
         base_url = str(request.base_url)
         if self.router_prefix:
             base_url += self.router_prefix.lstrip("/")
-        return url_path.make_absolute_url(base_url=base_url)
+
+        return str(url_path.make_absolute_url(base_url=base_url))
 
     def register_routes(self):
         """Register TMS endpoint routes."""
@@ -354,21 +356,21 @@ class TMSFactory:
             return {
                 "tileMatrixSets": [
                     {
-                        "id": tms.identifier,
-                        "title": tms.identifier,
+                        "id": tms,
+                        "title": tms,
                         "links": [
                             {
                                 "href": self.url_for(
                                     request,
                                     "TileMatrixSet_info",
-                                    TileMatrixSetId=tms.identifier,
+                                    TileMatrixSetId=tms,
                                 ),
                                 "rel": "item",
                                 "type": "application/json",
                             }
                         ],
                     }
-                    for tms in self.supported_tms.tms.values()
+                    for tms in self.supported_tms.list()
                 ]
             }
 
