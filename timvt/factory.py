@@ -15,6 +15,7 @@ from timvt.models.OGC import TileMatrixSetList
 from timvt.resources.enums import MimeTypes
 
 from fastapi import APIRouter, Depends, Path, Query
+from fastapi.params import Param
 
 from starlette.datastructures import QueryParams
 from starlette.requests import Request
@@ -114,10 +115,7 @@ class VectorTilerFactory:
         async def tile(
             request: Request,
             tile: Tile = Depends(TileParams),
-            TileMatrixSetId: Literal[tuple(self.supported_tms.list())] = Query(
-                self.default_tms,
-                description=f"TileMatrixSet Name (default: '{self.default_tms}')",
-            ),
+            TileMatrixSetId: Literal[tuple(self.supported_tms.list())] = self.default_tms,
             layer=Depends(self.layer_dependency),
         ):
             """Return vector tile."""
@@ -146,10 +144,7 @@ class VectorTilerFactory:
         async def tilejson(
             request: Request,
             layer=Depends(self.layer_dependency),
-            TileMatrixSetId: Literal[tuple(self.supported_tms.list())] = Query(
-                self.default_tms,
-                description=f"TileMatrixSet Name (default: '{self.default_tms}')",
-            ),
+            TileMatrixSetId: Literal[tuple(self.supported_tms.list())] = self.default_tms,
             minzoom: Optional[int] = Query(
                 None, description="Overwrite default minzoom."
             ),

@@ -1,19 +1,20 @@
 """
 TiMVT config.
 
-TiMVT uses pydantic.BaseSettings to either get settings from `.env` or environment variables
+TiMVT uses BaseSettings to either get settings from `.env` or environment variables
 see: https://pydantic-docs.helpmanual.io/usage/settings/
 
 """
 import sys
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
-
+from pydantic_settings import BaseSettings
 import pydantic
+
 
 # Pydantic does not support older versions of typing.TypedDict
 # https://github.com/pydantic/pydantic/pull/3374
-if sys.version_info < (3, 9, 2):
+if sys.version_info < (3, 12, 0):
     from typing_extensions import TypedDict
 else:
     from typing import TypedDict
@@ -28,7 +29,7 @@ class TableConfig(TypedDict, total=False):
     properties: Optional[List[str]]
 
 
-class TableSettings(pydantic.BaseSettings):
+class TableSettings(BaseSettings):
     """Table configuration settings"""
 
     fallback_key_names: List[str] = ["ogc_fid", "id", "pkey", "gid"]
@@ -42,7 +43,7 @@ class TableSettings(pydantic.BaseSettings):
         env_nested_delimiter = "__"
 
 
-class _ApiSettings(pydantic.BaseSettings):
+class _ApiSettings(BaseSettings):
     """API settings"""
 
     name: str = "TiMVT"
@@ -76,7 +77,7 @@ def ApiSettings() -> _ApiSettings:
     return _ApiSettings()
 
 
-class _TileSettings(pydantic.BaseSettings):
+class _TileSettings(BaseSettings):
     """MVT settings"""
 
     tile_resolution: int = 4096
@@ -99,7 +100,7 @@ def TileSettings() -> _TileSettings:
     return _TileSettings()
 
 
-class PostgresSettings(pydantic.BaseSettings):
+class PostgresSettings(BaseSettings):
     """Postgres-specific API settings.
 
     Attributes:
@@ -110,11 +111,11 @@ class PostgresSettings(pydantic.BaseSettings):
         postgres_dbname: database name.
     """
 
-    postgres_user: Optional[str]
-    postgres_pass: Optional[str]
-    postgres_host: Optional[str]
-    postgres_port: Optional[str]
-    postgres_dbname: Optional[str]
+    postgres_user: Optional[str] = None
+    postgres_pass: Optional[str] = None
+    postgres_host: Optional[str] = None
+    postgres_port: Optional[str] = None
+    postgres_dbname: Optional[str] = None
 
     database_url: Optional[pydantic.PostgresDsn] = None
 
@@ -124,7 +125,7 @@ class PostgresSettings(pydantic.BaseSettings):
     db_max_inactive_conn_lifetime: float = 300
 
     db_schemas: List[str] = ["public"]
-    db_tables: Optional[List[str]]
+    db_tables: Optional[List[str]] = None
 
     class Config:
         """model config"""

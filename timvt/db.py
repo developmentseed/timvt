@@ -31,7 +31,7 @@ async def connect_to_db(
         settings = PostgresSettings()
 
     app.state.pool = await asyncpg.create_pool_b(
-        settings.database_url,
+        settings.database_url.unicode_string(),
         min_size=settings.db_min_conn_size,
         max_size=settings.db_max_conn_size,
         max_queries=settings.db_max_queries,

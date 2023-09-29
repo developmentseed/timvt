@@ -38,12 +38,12 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
     id: str
     bounds: List[float] = [-180, -90, 180, 90]
     crs: str = "http://www.opengis.net/def/crs/EPSG/0/4326"
-    title: Optional[str]
-    description: Optional[str]
+    title: Optional[str] = None
+    description: Optional[str] = None
     minzoom: int = tile_settings.default_minzoom
     maxzoom: int = tile_settings.default_maxzoom
     default_tms: str = tile_settings.default_tms
-    tileurl: Optional[str]
+    tileurl: Optional[str] = None
 
     @abc.abstractmethod
     async def get_tile(
@@ -89,7 +89,7 @@ class Table(Layer, DBTable):
 
     type: str = "Table"
 
-    @root_validator
+    @root_validator(pre=True)
     def bounds_default(cls, values):
         """Get default bounds from the first geometry columns."""
         geoms = values.get("geometry_columns")
@@ -239,9 +239,9 @@ class Function(Layer):
     type: str = "Function"
     sql: str
     function_name: Optional[str]
-    options: Optional[List[Dict[str, Any]]]
+    options: Optional[List[Dict[str, Any]]] = None
 
-    @root_validator
+    @root_validator(pre=True)
     def function_name_default(cls, values):
         """Define default function's name to be same as id."""
         function_name = values.get("function_name")
