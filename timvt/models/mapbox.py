@@ -37,7 +37,7 @@ class TileJSON(BaseModel):
     bounds: List[float] = [-180, -90, 180, 90]
     center: Optional[Tuple[float, float, int]]
 
-    @root_validator
+    @root_validator(pre=True)
     def compute_center(cls, values):
         """Compute center if it does not exist."""
         bounds = values["bounds"]
