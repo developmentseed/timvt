@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional
 
 from buildpg import asyncpg
 from pydantic import BaseModel, Field
-
 from timvt.settings import TableSettings
 
 

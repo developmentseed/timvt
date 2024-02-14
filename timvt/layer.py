@@ -10,7 +10,6 @@ from buildpg import Func
 from buildpg import Var as pg_variable
 from buildpg import asyncpg, clauses, funcs, render, select_fields
 from pydantic import BaseModel, root_validator
-
 from timvt.dbmodel import Table as DBTable
 from timvt.errors import (
     InvalidGeometryColumnName,
@@ -95,9 +94,16 @@ class Table(Layer, DBTable):
         geoms = values.get("geometry_columns")
         if geoms:
             # Get the Extent of all the bounds
-            minx, miny, maxx, maxy = zip(*[geom.bounds for geom in geoms])
+            def get_bounds(geom):
+                bounds = getattr(geom, "bounds", None)
+                if bounds is None:
+                    bounds = geom["bounds"]
+                return bounds
+
+            minx, miny, maxx, maxy = zip(*[get_bounds(geom) for geom in geoms])
             values["bounds"] = [min(minx), min(miny), max(maxx), max(maxy)]
-            values["crs"] = f"http://www.opengis.net/def/crs/EPSG/0/{geoms[0].srid}"
+            srid = geoms[0]["srid"]
+            values["crs"] = f"http://www.opengis.net/def/crs/EPSG/0/{srid}"
 
         return values
 
