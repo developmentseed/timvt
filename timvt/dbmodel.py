@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional
 
 from buildpg import asyncpg
 from pydantic import BaseModel, Field
-
 from timvt.settings import TableSettings
 
 
@@ -237,7 +236,9 @@ async def get_table_index(
                 jsonb_build_object(
                     'name', attname,
                     'type', "type",
-                    'description', description
+                    'description', description,
+                    'min', NULL,
+                    'max', NULL
                 )
             ) FILTER (WHERE type LIKE 'timestamp%'), '[]'::jsonb) as datetime_columns,
             coalesce(jsonb_agg(

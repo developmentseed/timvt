@@ -6,11 +6,10 @@ from dataclasses import dataclass
 from typing import Any, ClassVar, Dict, List, Optional
 
 import morecantile
-from buildpg import Func
+from buildpg import Func, RawDangerous
 from buildpg import Var as pg_variable
 from buildpg import asyncpg, clauses, funcs, render, select_fields
 from pydantic import BaseModel, root_validator
-
 from timvt.dbmodel import Table as DBTable
 from timvt.errors import (
     InvalidGeometryColumnName,
@@ -38,12 +37,12 @@ class Layer(BaseModel, metaclass=abc.ABCMeta):
     id: str
     bounds: List[float] = [-180, -90, 180, 90]
     crs: str = "http://www.opengis.net/def/crs/EPSG/0/4326"
-    title: Optional[str]
-    description: Optional[str]
+    title: Optional[str] = None
+    description: Optional[str] = None
     minzoom: int = tile_settings.default_minzoom
     maxzoom: int = tile_settings.default_maxzoom
     default_tms: str = tile_settings.default_tms
-    tileurl: Optional[str]
+    tileurl: Optional[str] = None
 
     @abc.abstractmethod
     async def get_tile(
@@ -89,15 +88,22 @@ class Table(Layer, DBTable):
 
     type: str = "Table"
 
-    @root_validator
+    @root_validator(pre=True)
     def bounds_default(cls, values):
         """Get default bounds from the first geometry columns."""
         geoms = values.get("geometry_columns")
         if geoms:
             # Get the Extent of all the bounds
-            minx, miny, maxx, maxy = zip(*[geom.bounds for geom in geoms])
+            def get_bounds(geom):
+                bounds = getattr(geom, "bounds", None)
+                if bounds is None:
+                    bounds = geom["bounds"]
+                return bounds
+
+            minx, miny, maxx, maxy = zip(*[get_bounds(geom) for geom in geoms])
             values["bounds"] = [min(minx), min(miny), max(maxx), max(maxy)]
-            values["crs"] = f"http://www.opengis.net/def/crs/EPSG/0/{geoms[0].srid}"
+            srid = geoms[0]["srid"]
+            values["crs"] = f"http://www.opengis.net/def/crs/EPSG/0/{srid}"
 
         return values
 
@@ -151,6 +157,12 @@ class Table(Layer, DBTable):
         tms_srid = tms.crs.to_epsg()
         tms_proj = tms.crs.to_proj4()
 
+        # This may be more valid but it doesn't add quotes around the column names
+        # _fields = select_fields(*cols)
+
+        _fields = [f'"{f}"' for f in cols]
+        _fields = ", ".join(_fields)
+
         async with pool.acquire() as conn:
             sql_query = """
                 WITH
@@ -203,7 +215,7 @@ class Table(Layer, DBTable):
                 sql_query,
                 tablename=pg_variable(self.id),
                 geometry_column=pg_variable(geometry_column.name),
-                fields=select_fields(*cols),
+                fields=RawDangerous(_fields),
                 xmin=bbox.left,
                 ymin=bbox.bottom,
                 xmax=bbox.right,
@@ -239,9 +251,9 @@ class Function(Layer):
     type: str = "Function"
     sql: str
     function_name: Optional[str]
-    options: Optional[List[Dict[str, Any]]]
+    options: Optional[List[Dict[str, Any]]] = None
 
-    @root_validator
+    @root_validator(pre=True)
     def function_name_default(cls, values):
         """Define default function's name to be same as id."""
         function_name = values.get("function_name")

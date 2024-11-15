@@ -3,10 +3,10 @@ name = "timvt"
 description = "A lightweight PostGIS based dynamic vector tile server."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 authors = [
-    {name = "Vincent Sarago", email = "vincent@developmentseed.org"},
-    {name = "David Bitner", email = "david@developmentseed.org"},
+    { name = "Vincent Sarago", email = "vincent@developmentseed.org" },
+    { name = "David Bitner", email = "david@developmentseed.org" },
 ]
 keywords = ["FastAPI", "MVT", "POSTGIS"]
 classifiers = [
@@ -26,9 +26,10 @@ dependencies = [
     "buildpg>=0.3",
     "fastapi>=0.87",
     "jinja2>=2.11.2,<4.0.0",
-    "morecantile>=3.1,<4.0",
+    "morecantile>=5.0,<6.0",
     "starlette-cramjam>=0.3,<0.4",
     "importlib_resources>=1.1.0; python_version < '3.9'",
+    "pydantic-settings>=2.0.3",
     "typing_extensions; python_version < '3.9.2'",
 ]
 
@@ -46,12 +47,8 @@ test = [
     "numpy",
     "sqlalchemy>=1.1,<1.4",
 ]
-dev = [
-    "pre-commit",
-]
-server = [
-    "uvicorn[standard]>=0.12.0,<0.19.0",
-]
+dev = ["pre-commit"]
+server = ["uvicorn[standard]>=0.12.0,<0.19.0"]
 docs = [
     "nbconvert",
     "mkdocs",
@@ -71,22 +68,22 @@ path = "timvt/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
-  "/tests",
-  "/dockerfiles",
-  "/docs",
-  "/demo",
-  "/data",
-  "docker-compose.yml",
-  "CONTRIBUTING.md",
-  "CHANGES.md",
-  ".pytest_cache",
-  ".history",
-  ".github",
-  ".env.example",
-  ".bumpversion.cfg",
-  ".flake8",
-  ".gitignore",
-  ".pre-commit-config.yaml",
+    "/tests",
+    "/dockerfiles",
+    "/docs",
+    "/demo",
+    "/data",
+    "docker-compose.yml",
+    "CONTRIBUTING.md",
+    "CHANGES.md",
+    ".pytest_cache",
+    ".history",
+    ".github",
+    ".env.example",
+    ".bumpversion.cfg",
+    ".flake8",
+    ".gitignore",
+    ".pre-commit-config.yaml",
 ]
 
 [build-system]
@@ -96,13 +93,8 @@ build-backend = "hatchling.build"
 [tool.isort]
 profile = "black"
 known_first_party = ["timvt"]
-known_third_party = [
-    "morecantile",
-]
-forced_separate = [
-    "fastapi",
-    "starlette",
-]
+known_third_party = ["morecantile"]
+forced_separate = ["fastapi", "starlette"]
 default_section = "THIRDPARTY"
 
 [tool.mypy]

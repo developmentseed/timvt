@@ -1,14 +1,13 @@
 """timvt.db: database events."""
 
+from os import getenv
 from typing import Any, Optional
 
 import orjson
 from buildpg import asyncpg
-
+from fastapi import FastAPI
 from timvt.dbmodel import get_table_index
 from timvt.settings import PostgresSettings
-
-from fastapi import FastAPI
 
 
 async def con_init(conn):
